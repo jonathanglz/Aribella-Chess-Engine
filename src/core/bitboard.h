@@ -46,5 +46,14 @@ namespace Aribella {
         bb &= ~square_bb(sq);
     }
 
+    constexpr Bitboard file_mask(File file) noexcept {
+        assert(is_valid(file));
+        return FileMasks[to_index(file)];
+    }
+
+    constexpr Bitboard rank_mask(Rank rank) noexcept {
+        assert(is_valid(rank));
+        return RankMasks[to_index(rank)];
+    }
 
 }

@@ -1,11 +1,13 @@
 #pragma once
 
+#include <array>
+
 #include "types.h"
 
 namespace Aribella {
 
     // Little Endian Rank File (LERF)
-    // https://www.chessprogramming.org/Square_Mapping_Considerations
+    // See: Chessprogramming Wiki - Square_Mapping_Considerations
     inline constexpr Bitboard FileA{0x0101010101010101ULL};
     inline constexpr Bitboard FileB = FileA << 1;
     inline constexpr Bitboard FileC = FileA << 2;
@@ -17,11 +19,21 @@ namespace Aribella {
 
     inline constexpr Bitboard Rank1{0x00000000000000FFULL};
     inline constexpr Bitboard Rank2 = Rank1 << 8;
-    inline constexpr Bitboard Rank3 = Rank2 << 16;
-    inline constexpr Bitboard Rank4 = Rank3 << 24;
-    inline constexpr Bitboard Rank5 = Rank4 << 32;
-    inline constexpr Bitboard Rank6 = Rank5 << 40;
-    inline constexpr Bitboard Rank7 = Rank6 << 48;
-    inline constexpr Bitboard Rank8 = Rank7 << 56;
+    inline constexpr Bitboard Rank3 = Rank1 << 16;
+    inline constexpr Bitboard Rank4 = Rank1 << 24;
+    inline constexpr Bitboard Rank5 = Rank1 << 32;
+    inline constexpr Bitboard Rank6 = Rank1 << 40;
+    inline constexpr Bitboard Rank7 = Rank1 << 48;
+    inline constexpr Bitboard Rank8 = Rank1 << 56;
 
+    inline constexpr std::array<Bitboard, 8> FileMasks {
+        FileA, FileB, FileC, FileD,
+        FileE, FileF, FileG, FileH
+    };
+
+    inline constexpr std::array<Bitboard, 8> RankMasks {
+        Rank1, Rank2, Rank3, Rank4,
+        Rank5, Rank6, Rank7, Rank8
+    };
+    
 }
