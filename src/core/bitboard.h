@@ -2,7 +2,6 @@
 
 #include <bit>
 #include <cassert>
-#include <string>
 
 #include "types.h"
 #include "constants.h"
@@ -34,5 +33,18 @@ namespace Aribella {
 
         return sq;
     }
+
+    constexpr bool is_set(Bitboard bb, Square sq) noexcept {
+        return (bb & square_bb(sq)) != 0;
+    }
+
+    constexpr void set_bit(Bitboard bb, Square sq) noexcept {
+        bb |= square_bb(sq);
+    }
+
+    constexpr void clear_bit(Bitboard bb, Square sq) noexcept {
+        bb &= ~square_bb(sq);
+    }
+
 
 }

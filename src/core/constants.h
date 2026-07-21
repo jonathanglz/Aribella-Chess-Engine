@@ -4,7 +4,7 @@
 
 namespace Aribella {
 
-    // Little Endian Rank File (LERF) constants from
+    // Little Endian Rank File (LERF)
     // https://www.chessprogramming.org/Square_Mapping_Considerations
     inline constexpr Bitboard FileA{0x0101010101010101ULL};
     inline constexpr Bitboard FileB = FileA << 1;

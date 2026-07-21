@@ -12,10 +12,6 @@ namespace Aribella {
         Black = 1,
     };
 
-    constexpr Color operator~(Color c) noexcept {
-        return c == Color::White ? Color::Black : Color::White;
-    }
-
     enum class PieceType : u8 {
         Pawn = 0,
         Knight,
@@ -24,13 +20,12 @@ namespace Aribella {
         Queen,
         King,
 
-        None
+        Count,
+        None = Count
     };
 
     enum class Piece : u8 {
-        None,
-
-        WhitePawn,
+        WhitePawn = 0,
         WhiteKnight,
         WhiteBishop,
         WhiteRook,
@@ -43,6 +38,9 @@ namespace Aribella {
         BlackRook,
         BlackQueen,
         BlackKing,
+
+        Count,
+        None = Count
     };
 
     enum class Square : u8 {
@@ -59,12 +57,61 @@ namespace Aribella {
         None = Count
     };
 
+    constexpr int to_index(Color c) noexcept {
+        return static_cast<int>(c);
+    }
+
+    constexpr int to_index(PieceType type) noexcept {
+        return static_cast<int>(type);
+    }
+
+    constexpr int to_index(Piece piece) noexcept {
+        return static_cast<int>(piece);
+    }
+
     constexpr int to_index(Square sq) noexcept {
         return static_cast<int>(sq);
     }
 
+    constexpr bool is_valid(Color c) noexcept {
+        return to_index(c) < 2;
+    }
+
+    constexpr bool is_valid(PieceType type) noexcept {
+        return to_index(type) < to_index(PieceType::Count);
+    }
+
+    constexpr bool is_valid(Piece piece) noexcept {
+        return to_index(piece) < to_index(Piece::Count);
+    }
+
     constexpr bool is_valid(Square sq) noexcept {
         return to_index(sq) < to_index(Square::Count);
+    }
+
+    constexpr Color operator~(Color c) noexcept {
+        return c == Color::White ? Color::Black : Color::White;
+    }
+
+    constexpr Piece make_piece(Color c, PieceType type) noexcept {
+        assert(is_valid(c));
+        assert(is_valid(type));
+
+        return static_cast<Piece>(
+            to_index(c) * to_index(PieceType::Count) + to_index(type)
+        );
+    }
+
+    constexpr Color color_of(Piece piece) noexcept {
+        assert(is_valid(piece));
+
+        return static_cast<Color>(to_index(piece) / to_index(PieceType::Count));
+    }
+
+    constexpr PieceType type_of(Piece piece) noexcept {
+        assert(is_valid(piece));
+
+        return static_cast<PieceType>(to_index(piece) % to_index(PieceType::Count));
     }
 
 }
