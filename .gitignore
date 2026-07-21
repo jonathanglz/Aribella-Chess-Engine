@@ -124,6 +124,7 @@ CTestTestfile.cmake
 _deps
 
 # Build directories
+.idea/
 build/
 
 # OS files
