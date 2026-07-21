@@ -1,9 +1,9 @@
-#ifndef ARIBELLA_TYPES_H
-#define ARIBELLA_TYPES_H
+#pragma once
 
 #include <cstdint>
 
 namespace Aribella {
-    
+
+    using Bitboard = std::uint64_t;
+
 }
-#endif //ARIBELLA_TYPES_H
