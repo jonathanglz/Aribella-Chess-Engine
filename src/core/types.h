@@ -7,10 +7,29 @@ namespace Aribella {
     using Bitboard = std::uint64_t;
     using u8 = std::uint8_t;
 
+
     enum class Color : u8 {
         White = 0,
-        Black = 1,
+        Black,
+
+        Count
     };
+
+    constexpr int to_index(Color c) noexcept {
+        return static_cast<int>(c);
+    }
+
+    constexpr bool is_valid(Color c) noexcept {
+        return to_index(c) < to_index(Color::Count);
+    }
+
+    constexpr Color operator~(Color c) noexcept {
+        assert(is_valid(c));
+
+        return c == Color::White
+            ? Color::Black
+            : Color::White;
+    }
 
     enum class PieceType : u8 {
         Pawn = 0,
@@ -23,6 +42,14 @@ namespace Aribella {
         Count,
         None = Count
     };
+
+    constexpr int to_index(PieceType type) noexcept {
+        return static_cast<int>(type);
+    }
+
+    constexpr bool is_valid(PieceType type) noexcept {
+        return to_index(type) < to_index(PieceType::Count);
+    }
 
     enum class Piece : u8 {
         WhitePawn = 0,
@@ -43,6 +70,77 @@ namespace Aribella {
         None = Count
     };
 
+    constexpr int to_index(Piece piece) noexcept {
+        return static_cast<int>(piece);
+    }
+
+    constexpr bool is_valid(Piece piece) noexcept {
+        return to_index(piece) < to_index(Piece::Count);
+    }
+
+    constexpr Color color_of(Piece piece) noexcept {
+        assert(is_valid(piece));
+
+        return static_cast<Color>(to_index(piece) / to_index(PieceType::Count));
+    }
+
+    constexpr PieceType type_of(Piece piece) noexcept {
+        assert(is_valid(piece));
+
+        return static_cast<PieceType>(to_index(piece) % to_index(PieceType::Count));
+    }
+
+    constexpr Piece make_piece(Color c, PieceType type) noexcept {
+        assert(is_valid(c));
+        assert(is_valid(type));
+
+        return static_cast<Piece>(
+            to_index(c) * to_index(PieceType::Count) + to_index(type)
+        );
+    }
+
+    enum class File : u8 {
+        A = 0,
+        B,
+        C,
+        D,
+        E,
+        F,
+        G,
+        H,
+
+        Count
+    };
+
+    constexpr int to_index(File file) noexcept {
+        return static_cast<int>(file);
+    }
+
+    constexpr bool is_valid(File file) noexcept {
+        return to_index(file) < to_index(File::Count);
+    }
+
+    enum class Rank : u8 {
+        R1 = 0,
+        R2,
+        R3,
+        R4,
+        R5,
+        R6,
+        R7,
+        R8,
+
+        Count
+    };
+
+    constexpr int to_index(Rank rank) noexcept {
+        return static_cast<int>(rank);
+    }
+
+    constexpr bool is_valid(Rank rank) noexcept {
+        return to_index(rank) < to_index(Rank::Count);
+    }
+
     enum class Square : u8 {
         A1, B1, C1, D1, E1, F1, G1, H1,
         A2, B2, C2, D2, E2, F2, G2, H2,
@@ -57,61 +155,38 @@ namespace Aribella {
         None = Count
     };
 
-    constexpr int to_index(Color c) noexcept {
-        return static_cast<int>(c);
-    }
-
-    constexpr int to_index(PieceType type) noexcept {
-        return static_cast<int>(type);
-    }
-
-    constexpr int to_index(Piece piece) noexcept {
-        return static_cast<int>(piece);
-    }
-
     constexpr int to_index(Square sq) noexcept {
         return static_cast<int>(sq);
-    }
-
-    constexpr bool is_valid(Color c) noexcept {
-        return to_index(c) < 2;
-    }
-
-    constexpr bool is_valid(PieceType type) noexcept {
-        return to_index(type) < to_index(PieceType::Count);
-    }
-
-    constexpr bool is_valid(Piece piece) noexcept {
-        return to_index(piece) < to_index(Piece::Count);
     }
 
     constexpr bool is_valid(Square sq) noexcept {
         return to_index(sq) < to_index(Square::Count);
     }
 
-    constexpr Color operator~(Color c) noexcept {
-        return c == Color::White ? Color::Black : Color::White;
+    // Little-endian rank-file mapping:
+    // file = square & 7
+    // rank = square >> 3
+    // square = (rank << 3) + file
+    // See: Chessprogramming Wiki - Square_Mapping_Considerations
+    constexpr File file_of(Square sq) noexcept {
+        assert(is_valid(sq));
+
+        return static_cast<File>(to_index(sq) & 7);
     }
 
-    constexpr Piece make_piece(Color c, PieceType type) noexcept {
-        assert(is_valid(c));
-        assert(is_valid(type));
+    constexpr Rank rank_of(Square sq) noexcept {
+        assert(is_valid(sq));
 
-        return static_cast<Piece>(
-            to_index(c) * to_index(PieceType::Count) + to_index(type)
+        return static_cast<Rank>(to_index(sq) >> 3);
+    }
+
+    constexpr Square make_square(File file, Rank rank) noexcept {
+        assert(is_valid(file));
+        assert(is_valid(rank));
+
+        return static_cast<Square>(
+            (to_index(rank) << 3) + to_index(file)
         );
-    }
-
-    constexpr Color color_of(Piece piece) noexcept {
-        assert(is_valid(piece));
-
-        return static_cast<Color>(to_index(piece) / to_index(PieceType::Count));
-    }
-
-    constexpr PieceType type_of(Piece piece) noexcept {
-        assert(is_valid(piece));
-
-        return static_cast<PieceType>(to_index(piece) % to_index(PieceType::Count));
     }
 
 }
