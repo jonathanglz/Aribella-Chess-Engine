@@ -1,11 +1,15 @@
 #pragma once
 
 #include <cstdint>
+#include <cassert>
+
+#include "constants.h"
 
 namespace Aribella {
 
     using Bitboard = std::uint64_t;
     using u8 = std::uint8_t;
+    using i8 = std::int8_t;
 
 
     enum class Color : u8 {
@@ -167,7 +171,7 @@ namespace Aribella {
     // file = square & 7
     // rank = square >> 3
     // square = (rank << 3) + file
-    // See: Chessprogramming Wiki - Square_Mapping_Considerations
+    // See: ChessProgramming Wiki - Square_Mapping_Considerations
     constexpr File file_of(Square sq) noexcept {
         assert(is_valid(sq));
 
@@ -187,6 +191,55 @@ namespace Aribella {
         return static_cast<Square>(
             (to_index(rank) << 3) + to_index(file)
         );
+    }
+
+    enum class Direction : i8 {
+        North       = 8,
+        South       = -8,
+
+        East        = 1,
+        West        = -1,
+
+        NorthEast   = 9,
+        NorthWest   = 7,
+        SouthEast   = -7,
+        SouthWest   = -9
+    };
+
+    constexpr int offset(Direction direction) noexcept {
+        return static_cast<int>(direction);
+    }
+
+    constexpr Bitboard shift_north(Bitboard bb) noexcept {
+        return bb << offset(Direction::North);
+    }
+
+    constexpr Bitboard shift_south(Bitboard bb) noexcept {
+        return bb >> -offset(Direction::South);
+    }
+
+    constexpr Bitboard shift_east(Bitboard bb) noexcept {
+        return (bb & ~FileH) << offset(Direction::East);
+    }
+
+    constexpr Bitboard shift_west(Bitboard bb) noexcept {
+        return (bb & ~FileA) >> -offset(Direction::West);
+    }
+
+    constexpr Bitboard shift_northeast(Bitboard bb) noexcept {
+        return (bb & ~FileH) << offset(Direction::NorthEast);
+    }
+
+    constexpr Bitboard shift_northwest(Bitboard bb) noexcept {
+        return (bb & ~FileA) << offset(Direction::NorthWest);
+    }
+
+    constexpr Bitboard shift_southeast(Bitboard bb) noexcept {
+        return (bb & ~FileH) >> -offset(Direction::SouthEast);
+    }
+
+    constexpr Bitboard shift_southwest(Bitboard bb) noexcept {
+        return (bb & ~FileA) >> -offset(Direction::SouthWest);
     }
 
 }

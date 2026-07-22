@@ -17,16 +17,16 @@ namespace Aribella {
         return Bitboard{1} << to_index(sq);
     }
 
-    inline int popcount(Bitboard bb) noexcept {
+    constexpr int popcount(Bitboard bb) noexcept {
         return std::popcount(bb);
     }
 
-    inline Square lsb(Bitboard bb) noexcept {
+    constexpr Square lsb(Bitboard bb) noexcept {
         assert(bb);
         return static_cast<Square>(std::countr_zero(bb));
     }
 
-    inline Square pop_lsb(Bitboard& bb) noexcept {
+    constexpr Square pop_lsb(Bitboard& bb) noexcept {
         assert(bb);
         const Square sq = lsb(bb);
         bb &= bb - 1;
@@ -38,11 +38,11 @@ namespace Aribella {
         return (bb & square_bb(sq)) != 0;
     }
 
-    constexpr void set_bit(Bitboard bb, Square sq) noexcept {
+    constexpr void set_bit(Bitboard& bb, Square sq) noexcept {
         bb |= square_bb(sq);
     }
 
-    constexpr void clear_bit(Bitboard bb, Square sq) noexcept {
+    constexpr void clear_bit(Bitboard& bb, Square sq) noexcept {
         bb &= ~square_bb(sq);
     }
 

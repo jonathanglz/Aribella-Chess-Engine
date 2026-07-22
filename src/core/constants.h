@@ -26,14 +26,14 @@ namespace Aribella {
     inline constexpr Bitboard Rank7 = Rank1 << 48;
     inline constexpr Bitboard Rank8 = Rank1 << 56;
 
-    inline constexpr std::array<Bitboard, 8> FileMasks {
+    inline constexpr std::array<Bitboard, to_index(File::Count)> FileMasks {
         FileA, FileB, FileC, FileD,
         FileE, FileF, FileG, FileH
     };
 
-    inline constexpr std::array<Bitboard, 8> RankMasks {
+    inline constexpr std::array<Bitboard, to_index(Rank::Count)> RankMasks {
         Rank1, Rank2, Rank3, Rank4,
         Rank5, Rank6, Rank7, Rank8
     };
-    
+
 }
