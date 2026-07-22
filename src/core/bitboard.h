@@ -2,8 +2,6 @@
 
 #include <bit>
 #include <cassert>
-
-#include "types.h"
 #include "constants.h"
 
 namespace Aribella {
@@ -54,6 +52,38 @@ namespace Aribella {
     constexpr Bitboard rank_mask(Rank rank) noexcept {
         assert(is_valid(rank));
         return RankMasks[to_index(rank)];
+    }
+
+    constexpr Bitboard shift_north(Bitboard bb) noexcept {
+        return bb << offset(Direction::North);
+    }
+
+    constexpr Bitboard shift_south(Bitboard bb) noexcept {
+        return bb >> -offset(Direction::South);
+    }
+
+    constexpr Bitboard shift_east(Bitboard bb) noexcept {
+        return (bb & ~FileH) << offset(Direction::East);
+    }
+
+    constexpr Bitboard shift_west(Bitboard bb) noexcept {
+        return (bb & ~FileA) >> -offset(Direction::West);
+    }
+
+    constexpr Bitboard shift_northeast(Bitboard bb) noexcept {
+        return (bb & ~FileH) << offset(Direction::NorthEast);
+    }
+
+    constexpr Bitboard shift_northwest(Bitboard bb) noexcept {
+        return (bb & ~FileA) << offset(Direction::NorthWest);
+    }
+
+    constexpr Bitboard shift_southeast(Bitboard bb) noexcept {
+        return (bb & ~FileH) >> -offset(Direction::SouthEast);
+    }
+
+    constexpr Bitboard shift_southwest(Bitboard bb) noexcept {
+        return (bb & ~FileA) >> -offset(Direction::SouthWest);
     }
 
 }

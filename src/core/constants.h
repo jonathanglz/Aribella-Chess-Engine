@@ -1,11 +1,9 @@
 #pragma once
 
 #include <array>
-
 #include "types.h"
 
 namespace Aribella {
-
     // Little Endian Rank File (LERF)
     // See: Chessprogramming Wiki - Square_Mapping_Considerations
     inline constexpr Bitboard FileA{0x0101010101010101ULL};
