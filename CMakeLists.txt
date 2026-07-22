@@ -21,4 +21,5 @@ add_executable(Aribella main.cpp
         src/movegen/movegen.h
         src/movegen/attacks.cpp
         src/movegen/attacks.h
-        tests/bitboard_tests.cpp)
+        tests/bitboard_tests.cpp
+        tests/types_tests.cpp)

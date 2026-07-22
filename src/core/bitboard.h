@@ -6,9 +6,7 @@
 
 namespace Aribella {
 
-    namespace Bitboards {
-        void print_bitboard(Bitboard bb);
-    }
+    void print_bitboard(Bitboard bb);
 
     constexpr Bitboard square_bb(Square sq) noexcept {
         assert(is_valid(sq));
