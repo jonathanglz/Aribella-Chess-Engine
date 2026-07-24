@@ -88,3 +88,14 @@ static_assert(
 static_assert(
     shift_southwest(square_bb(Square::A4)) == Bitboard{0}
 );
+
+static_assert(
+    pawn_attacks(Color::White, square_bb(Square::E4))
+        == (square_bb(Square::D5) | square_bb(Square::F5))
+);
+
+static_assert(
+    pawn_attacks(Color::Black, square_bb(Square::E4))
+        == (square_bb(Square::D3) | square_bb(Square::F3))
+);
+

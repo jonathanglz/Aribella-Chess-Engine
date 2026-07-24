@@ -84,4 +84,13 @@ namespace Aribella {
         return (bb & ~FileA) >> -offset(Direction::SouthWest);
     }
 
+    constexpr Bitboard pawn_attacks(Color c, Bitboard pawns) noexcept {
+        assert(is_valid(c));
+
+        return c == Color::White
+            ? shift_northeast(pawns) | shift_northwest(pawns)
+            : shift_southeast(pawns) | shift_southwest(pawns);
+    }
+
+
 }
