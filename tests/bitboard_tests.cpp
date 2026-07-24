@@ -99,3 +99,22 @@ static_assert(
         == (square_bb(Square::D3) | square_bb(Square::F3))
 );
 
+static_assert(
+    pawn_attacks(Color::White, square_bb(Square::A4))
+    == square_bb(Square::B5)
+);
+
+static_assert(
+    pawn_attacks(Color::White, square_bb(Square::H4))
+    == square_bb(Square::G5)
+);
+
+static_assert(
+    pawn_attacks(Color::Black, square_bb(Square::A4))
+    == square_bb(Square::B3)
+);
+
+static_assert(
+    pawn_attacks(Color::Black, square_bb(Square::H4))
+    == square_bb(Square::G3)
+);
