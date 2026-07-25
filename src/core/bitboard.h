@@ -84,12 +84,30 @@ namespace Aribella {
         return (bb & ~FileA) >> -offset(Direction::SouthWest);
     }
 
+    // See ChessProgramming Wiki - Pawn Attacks(Bitboards)
     constexpr Bitboard pawn_attacks(Color c, Bitboard pawns) noexcept {
         assert(is_valid(c));
 
         return c == Color::White
             ? shift_northeast(pawns) | shift_northwest(pawns)
             : shift_southeast(pawns) | shift_southwest(pawns);
+    }
+
+    // See ChessProgramming Wiki - Knight_Pattern(Knight Attacks)
+    constexpr Bitboard knight_attacks(Square sq) noexcept {
+        assert(is_valid(sq));
+
+        const Bitboard bb = square_bb(sq);
+
+        return
+            shift_north(shift_northeast(bb)) |
+            shift_north(shift_northwest(bb)) |
+            shift_south(shift_southeast(bb)) |
+            shift_south(shift_southwest(bb)) |
+            shift_east(shift_northeast(bb))  |
+            shift_east(shift_southeast(bb))  |
+            shift_west(shift_northwest(bb))  |
+            shift_west(shift_southwest(bb));
     }
 
 

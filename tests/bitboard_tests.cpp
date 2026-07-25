@@ -118,3 +118,59 @@ static_assert(
     pawn_attacks(Color::Black, square_bb(Square::H4))
     == square_bb(Square::G3)
 );
+
+static_assert(
+    popcount(knight_attacks(Square::E4)) == 8
+);
+
+static_assert(
+    knight_attacks(Square::E4) ==
+    (
+        square_bb(Square::D6) |
+        square_bb(Square::F6) |
+        square_bb(Square::C5) |
+        square_bb(Square::G5) |
+        square_bb(Square::C3) |
+        square_bb(Square::G3) |
+        square_bb(Square::D2) |
+        square_bb(Square::F2)
+    )
+);
+
+static_assert(
+    popcount(knight_attacks(Square::A1)) == 2
+);
+
+static_assert(
+    knight_attacks(Square::A1) ==
+    (
+        square_bb(Square::B3) |
+        square_bb(Square::C2)
+    )
+);
+
+static_assert(
+    popcount(knight_attacks(Square::H8)) == 2
+);
+
+static_assert(
+    knight_attacks(Square::H8) ==
+    (
+        square_bb(Square::F7) |
+        square_bb(Square::G6)
+    )
+);
+
+static_assert(
+    popcount(knight_attacks(Square::H4)) == 4
+);
+
+static_assert(
+    knight_attacks(Square::H4) ==
+    (
+        square_bb(Square::F5) |
+        square_bb(Square::F3) |
+        square_bb(Square::G6) |
+        square_bb(Square::G2)
+    )
+);
