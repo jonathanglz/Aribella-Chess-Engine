@@ -120,11 +120,11 @@ static_assert(
 );
 
 static_assert(
-    popcount(knight_attacks(Square::E4)) == 8
+    popcount(generate_knight_attacks(Square::E4)) == 8
 );
 
 static_assert(
-    knight_attacks(Square::E4) ==
+    generate_knight_attacks(Square::E4) ==
     (
         square_bb(Square::D6) |
         square_bb(Square::F6) |
@@ -138,11 +138,11 @@ static_assert(
 );
 
 static_assert(
-    popcount(knight_attacks(Square::A1)) == 2
+    popcount(generate_knight_attacks(Square::A1)) == 2
 );
 
 static_assert(
-    knight_attacks(Square::A1) ==
+    generate_knight_attacks(Square::A1) ==
     (
         square_bb(Square::B3) |
         square_bb(Square::C2)
@@ -150,11 +150,11 @@ static_assert(
 );
 
 static_assert(
-    popcount(knight_attacks(Square::H8)) == 2
+    popcount(generate_knight_attacks(Square::H8)) == 2
 );
 
 static_assert(
-    knight_attacks(Square::H8) ==
+    generate_knight_attacks(Square::H8) ==
     (
         square_bb(Square::F7) |
         square_bb(Square::G6)
@@ -162,11 +162,11 @@ static_assert(
 );
 
 static_assert(
-    popcount(knight_attacks(Square::H4)) == 4
+    popcount(generate_knight_attacks(Square::H4)) == 4
 );
 
 static_assert(
-    knight_attacks(Square::H4) ==
+    generate_knight_attacks(Square::H4) ==
     (
         square_bb(Square::F5) |
         square_bb(Square::F3) |

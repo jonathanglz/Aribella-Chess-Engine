@@ -94,7 +94,7 @@ namespace Aribella {
     }
 
     // See ChessProgramming Wiki - Knight_Pattern(Knight Attacks)
-    constexpr Bitboard knight_attacks(Square sq) noexcept {
+    constexpr Bitboard generate_knight_attacks(Square sq) noexcept {
         assert(is_valid(sq));
 
         const Bitboard bb = square_bb(sq);
@@ -108,6 +108,24 @@ namespace Aribella {
             shift_east(shift_southeast(bb))  |
             shift_west(shift_northwest(bb))  |
             shift_west(shift_southwest(bb));
+    }
+
+    constexpr std::array<Bitboard, to_index(Square::Count)> make_knight_attacks_table() noexcept {
+        std::array<Bitboard, to_index(Square::Count)> attacksTable{};
+
+        for (int i = 0; i < to_index(Square::Count); ++i) {
+            const auto sq = static_cast<Square>(i);
+            attacksTable[i] = generate_knight_attacks(sq);
+        }
+
+        return attacksTable;
+    }
+
+    inline constexpr auto KnightAttacksTable = make_knight_attacks_table();
+
+    constexpr Bitboard knight_attacks(Square sq) noexcept {
+        assert(is_valid(sq));
+        return KnightAttacksTable[to_index(sq)];
     }
 
 
