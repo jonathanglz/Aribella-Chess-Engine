@@ -123,6 +123,7 @@ static_assert(
     popcount(generate_knight_attacks(Square::E4)) == 8
 );
 
+
 static_assert(
     generate_knight_attacks(Square::E4) ==
     (
@@ -174,3 +175,36 @@ static_assert(
         square_bb(Square::G2)
     )
 );
+
+static_assert(
+    king_attacks(Square::E4) ==
+    (
+        square_bb(Square::D5) |
+        square_bb(Square::E5) |
+        square_bb(Square::F5) |
+        square_bb(Square::D4) |
+        square_bb(Square::F4) |
+        square_bb(Square::D3) |
+        square_bb(Square::E3) |
+        square_bb(Square::F3)
+    )
+);
+
+static_assert(
+    king_attacks(Square::A1) ==
+    (
+        square_bb(Square::A2) |
+        square_bb(Square::B2) |
+        square_bb(Square::B1)
+    )
+);
+
+static_assert(
+    king_attacks(Square::H8) ==
+    (
+        square_bb(Square::G8) |
+        square_bb(Square::G7) |
+        square_bb(Square::H7)
+    )
+);
+

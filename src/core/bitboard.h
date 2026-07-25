@@ -93,6 +93,7 @@ namespace Aribella {
             : shift_southeast(pawns) | shift_southwest(pawns);
     }
 
+    // Calculates one mask manually
     // See ChessProgramming Wiki - Knight_Pattern(Knight Attacks)
     constexpr Bitboard generate_knight_attacks(Square sq) noexcept {
         assert(is_valid(sq));
@@ -110,10 +111,11 @@ namespace Aribella {
             shift_west(shift_southwest(bb));
     }
 
-    constexpr std::array<Bitboard, to_index(Square::Count)> make_knight_attacks_table() noexcept {
+    // Builds table for all 64 masks
+    constexpr std::array<Bitboard, to_index(Square::Count)> make_knight_attack_table() noexcept {
         std::array<Bitboard, to_index(Square::Count)> attacksTable{};
 
-        for (int i = 0; i < to_index(Square::Count); ++i) {
+        for (std::size_t i = 0; i < attacksTable.size(); ++i) {
             const auto sq = static_cast<Square>(i);
             attacksTable[i] = generate_knight_attacks(sq);
         }
@@ -121,12 +123,48 @@ namespace Aribella {
         return attacksTable;
     }
 
-    inline constexpr auto KnightAttacksTable = make_knight_attacks_table();
+    // Stores all 64 masks in array
+    inline constexpr auto KnightAttackTable = make_knight_attack_table();
 
+    // Retrieves one of the stored mask.
     constexpr Bitboard knight_attacks(Square sq) noexcept {
         assert(is_valid(sq));
-        return KnightAttacksTable[to_index(sq)];
+        return KnightAttackTable[to_index(sq)];
     }
 
+    constexpr Bitboard generate_king_attacks(Square sq) noexcept {
+        assert(is_valid(sq));
+
+        const Bitboard bb = square_bb(sq);
+
+        return
+            shift_north(bb)     |
+            shift_northeast(bb) |
+            shift_northwest(bb) |
+            shift_east(bb)      |
+            shift_west(bb)      |
+            shift_south(bb)     |
+            shift_southeast(bb) |
+            shift_southwest(bb);
+    }
+
+    constexpr std::array<Bitboard, to_index(Square::Count)> make_king_attack_table() noexcept {
+        std::array<Bitboard, to_index(Square::Count)> attacksTable{};
+
+        for (std::size_t i = 0; i < attacksTable.size(); ++i) {
+            const auto sq = static_cast<Square>(i);
+            attacksTable[i] = generate_king_attacks(sq);
+        }
+
+        return attacksTable;
+    }
+
+    inline constexpr auto KingAttackTable = make_king_attack_table();
+
+    constexpr Bitboard king_attacks(Square sq) noexcept {
+        assert(is_valid(sq));
+
+        return KingAttackTable[to_index(sq)];
+    }
 
 }
