@@ -4,9 +4,9 @@
 #include <cassert>
 #include "constants.h"
 
-namespace Aribella {
 
-    void print_bitboard(Bitboard bb);
+namespace Aribella {
+    void print_bitboard(Aribella::Bitboard bb);
 
     constexpr Bitboard square_bb(Square sq) noexcept {
         assert(is_valid(sq));
@@ -22,7 +22,7 @@ namespace Aribella {
         return static_cast<Square>(std::countr_zero(bb));
     }
 
-    constexpr Square pop_lsb(Bitboard& bb) noexcept {
+    constexpr Square pop_lsb(Bitboard &bb) noexcept {
         assert(bb);
         const Square sq = lsb(bb);
         bb &= bb - 1;
@@ -34,11 +34,11 @@ namespace Aribella {
         return (bb & square_bb(sq)) != 0;
     }
 
-    constexpr void set_bit(Bitboard& bb, Square sq) noexcept {
+    constexpr void set_bit(Bitboard &bb, Square sq) noexcept {
         bb |= square_bb(sq);
     }
 
-    constexpr void clear_bit(Bitboard& bb, Square sq) noexcept {
+    constexpr void clear_bit(Bitboard &bb, Square sq) noexcept {
         bb &= ~square_bb(sq);
     }
 
@@ -89,8 +89,8 @@ namespace Aribella {
         assert(is_valid(c));
 
         return c == Color::White
-            ? shift_northeast(pawns) | shift_northwest(pawns)
-            : shift_southeast(pawns) | shift_southwest(pawns);
+                   ? shift_northeast(pawns) | shift_northwest(pawns)
+                   : shift_southeast(pawns) | shift_southwest(pawns);
     }
 
     // Calculates one mask manually
@@ -101,14 +101,14 @@ namespace Aribella {
         const Bitboard bb = square_bb(sq);
 
         return
-            shift_north(shift_northeast(bb)) |
-            shift_north(shift_northwest(bb)) |
-            shift_south(shift_southeast(bb)) |
-            shift_south(shift_southwest(bb)) |
-            shift_east(shift_northeast(bb))  |
-            shift_east(shift_southeast(bb))  |
-            shift_west(shift_northwest(bb))  |
-            shift_west(shift_southwest(bb));
+                shift_north(shift_northeast(bb)) |
+                shift_north(shift_northwest(bb)) |
+                shift_south(shift_southeast(bb)) |
+                shift_south(shift_southwest(bb)) |
+                shift_east(shift_northeast(bb)) |
+                shift_east(shift_southeast(bb)) |
+                shift_west(shift_northwest(bb)) |
+                shift_west(shift_southwest(bb));
     }
 
     // Builds table for all 64 masks
@@ -132,22 +132,24 @@ namespace Aribella {
         return KnightAttackTable[to_index(sq)];
     }
 
+    // Generates only one mask manually
     constexpr Bitboard generate_king_attacks(Square sq) noexcept {
         assert(is_valid(sq));
 
         const Bitboard bb = square_bb(sq);
 
         return
-            shift_north(bb)     |
-            shift_northeast(bb) |
-            shift_northwest(bb) |
-            shift_east(bb)      |
-            shift_west(bb)      |
-            shift_south(bb)     |
-            shift_southeast(bb) |
-            shift_southwest(bb);
+                shift_north(bb) |
+                shift_northeast(bb) |
+                shift_northwest(bb) |
+                shift_east(bb) |
+                shift_west(bb) |
+                shift_south(bb) |
+                shift_southeast(bb) |
+                shift_southwest(bb);
     }
 
+    // Builds table for all 64 masks
     constexpr std::array<Bitboard, to_index(Square::Count)> make_king_attack_table() noexcept {
         std::array<Bitboard, to_index(Square::Count)> attacksTable{};
 
@@ -159,12 +161,13 @@ namespace Aribella {
         return attacksTable;
     }
 
+    // Stores all 64 masks in array
     inline constexpr auto KingAttackTable = make_king_attack_table();
 
+    // Retrieves on of the stored mask
     constexpr Bitboard king_attacks(Square sq) noexcept {
         assert(is_valid(sq));
 
         return KingAttackTable[to_index(sq)];
     }
-
 }
