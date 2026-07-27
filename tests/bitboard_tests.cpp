@@ -241,3 +241,32 @@ static_assert(
         Bitboard{0}
     )
 );
+
+
+constexpr Bitboard blockers = square_bb(Square::D6) | square_bb(Square::D2)
+                              | square_bb(Square::F4) | square_bb(Square::B4);
+
+static_assert(generate_rook_attacks(Square::D4, blockers) ==
+              (
+                  square_bb(Square::D5) | square_bb(Square::D6) |
+                  square_bb(Square::D3) | square_bb(Square::D2) |
+                  square_bb(Square::E4) | square_bb(Square::F4) |
+                  square_bb(Square::C4) | square_bb(Square::B4)
+              )
+);
+
+constexpr Bitboard blockers2 = square_bb(Square::B6) | square_bb(Square::F6)
+            | square_bb(Square::B2) | square_bb(Square::F2);
+
+static_assert(generate_bishop_attacks(Square::D4, blockers2) ==
+    (
+        square_bb(Square::B6) | square_bb(Square::C5) |
+        square_bb(Square::E5) | square_bb(Square::F6) |
+        square_bb(Square::B2) | square_bb(Square::C3) |
+        square_bb(Square::E3) | square_bb(Square::F2)
+    )
+);
+
+
+
+

@@ -195,7 +195,7 @@ namespace Aribella {
 
     constexpr Bitboard generate_attacks_in_direction(Square sq, Direction direction, Bitboard occupancy) noexcept {
         assert(is_valid(sq));
-        
+
         Bitboard attacks{0};
         Bitboard current = square_bb(sq);
 
@@ -214,5 +214,29 @@ namespace Aribella {
         }
         return attacks;
     }
+
+    constexpr Bitboard generate_rook_attacks(Square sq, Bitboard occupancy) noexcept {
+        return
+                generate_attacks_in_direction(sq, Direction::North, occupancy) |
+                generate_attacks_in_direction(sq, Direction::South, occupancy) |
+                generate_attacks_in_direction(sq, Direction::East, occupancy) |
+                generate_attacks_in_direction(sq, Direction::West, occupancy);
+    }
+
+    constexpr Bitboard generate_bishop_attacks(Square sq, Bitboard occupancy) noexcept {
+        return
+                generate_attacks_in_direction(sq, Direction::NorthEast, occupancy) |
+                generate_attacks_in_direction(sq, Direction::NorthWest, occupancy) |
+                generate_attacks_in_direction(sq, Direction::SouthEast, occupancy) |
+                generate_attacks_in_direction(sq, Direction::SouthWest, occupancy);
+    }
+
+
+    constexpr Bitboard generate_queen_attacks(Square sq, Bitboard occupancy) noexcept {
+        return
+                generate_rook_attacks(sq, occupancy) |
+                generate_bishop_attacks(sq, occupancy);
+    }
+
 
 }
