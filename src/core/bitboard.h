@@ -170,4 +170,49 @@ namespace Aribella {
 
         return KingAttackTable[to_index(sq)];
     }
+
+    constexpr Bitboard shift(Bitboard bb, Direction direction) noexcept {
+        switch (direction) {
+            case Direction::North:
+                return shift_north(bb);
+            case Direction::South:
+                return shift_south(bb);
+            case Direction::East:
+                return shift_east(bb);
+            case Direction::West:
+                return shift_west(bb);
+            case Direction::NorthEast:
+                return shift_northeast(bb);
+            case Direction::NorthWest:
+                return shift_northwest(bb);
+            case Direction::SouthEast:
+                return shift_southeast(bb);
+            case Direction::SouthWest:
+                return shift_southwest(bb);
+        }
+        return Bitboard{0};
+    }
+
+    constexpr Bitboard generate_attacks_in_direction(Square sq, Direction direction, Bitboard occupancy) noexcept {
+        assert(is_valid(sq));
+        
+        Bitboard attacks{0};
+        Bitboard current = square_bb(sq);
+
+        while (true) {
+            current = shift(current, direction);
+
+            if (current == 0) {
+                break;
+            }
+
+            attacks |= current;
+
+            if (current & occupancy) {
+                break;
+            }
+        }
+        return attacks;
+    }
+
 }

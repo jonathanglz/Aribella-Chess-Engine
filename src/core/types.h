@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cassert>
+#include <cstddef>
 
 namespace Aribella {
 
@@ -17,8 +18,8 @@ namespace Aribella {
         Count
     };
 
-    constexpr int to_index(Color c) noexcept {
-        return static_cast<int>(c);
+    constexpr std::size_t to_index(Color c) noexcept {
+        return static_cast<std::size_t>(c);
     }
 
     constexpr bool is_valid(Color c) noexcept {
@@ -45,8 +46,8 @@ namespace Aribella {
         None = Count
     };
 
-    constexpr int to_index(PieceType type) noexcept {
-        return static_cast<int>(type);
+    constexpr std::size_t to_index(PieceType type) noexcept {
+        return static_cast<std::size_t>(type);
     }
 
     constexpr bool is_valid(PieceType type) noexcept {
@@ -72,8 +73,8 @@ namespace Aribella {
         None = Count
     };
 
-    constexpr int to_index(Piece piece) noexcept {
-        return static_cast<int>(piece);
+    constexpr std::size_t to_index(Piece piece) noexcept {
+        return static_cast<std::size_t>(piece);
     }
 
     constexpr bool is_valid(Piece piece) noexcept {
@@ -114,8 +115,8 @@ namespace Aribella {
         Count
     };
 
-    constexpr int to_index(File file) noexcept {
-        return static_cast<int>(file);
+    constexpr std::size_t to_index(File file) noexcept {
+        return static_cast<std::size_t>(file);
     }
 
     constexpr bool is_valid(File file) noexcept {
@@ -135,8 +136,8 @@ namespace Aribella {
         Count
     };
 
-    constexpr int to_index(Rank rank) noexcept {
-        return static_cast<int>(rank);
+    constexpr std::size_t to_index(Rank rank) noexcept {
+        return static_cast<std::size_t>(rank);
     }
 
     constexpr bool is_valid(Rank rank) noexcept {
@@ -157,8 +158,8 @@ namespace Aribella {
         None = Count
     };
 
-    constexpr int to_index(Square sq) noexcept {
-        return static_cast<int>(sq);
+    constexpr std::size_t to_index(Square sq) noexcept {
+        return static_cast<std::size_t>(sq);
     }
 
     constexpr bool is_valid(Square sq) noexcept {

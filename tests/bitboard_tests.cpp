@@ -91,12 +91,12 @@ static_assert(
 
 static_assert(
     pawn_attacks(Color::White, square_bb(Square::E4))
-        == (square_bb(Square::D5) | square_bb(Square::F5))
+    == (square_bb(Square::D5) | square_bb(Square::F5))
 );
 
 static_assert(
     pawn_attacks(Color::Black, square_bb(Square::E4))
-        == (square_bb(Square::D3) | square_bb(Square::F3))
+    == (square_bb(Square::D3) | square_bb(Square::F3))
 );
 
 static_assert(
@@ -208,3 +208,36 @@ static_assert(
     )
 );
 
+static_assert(
+    shift(square_bb(Square::E4), Direction::North) == square_bb(Square::E5)
+);
+
+static_assert(
+    shift(square_bb(Square::E8), Direction::North) == 0
+
+);
+
+static_assert(
+    generate_attacks_in_direction(Square::E4, Direction::North, Bitboard{0}) ==
+    (
+        square_bb(Square::E5) |
+        square_bb(Square::E6) |
+        square_bb(Square::E7) |
+        square_bb(Square::E8)
+    )
+);
+
+static_assert(
+    generate_attacks_in_direction(Square::E4, Direction::North, square_bb(Square::E6)) ==
+    (
+        square_bb(Square::E5) |
+        square_bb(Square::E6)
+    )
+);
+
+static_assert(
+    generate_attacks_in_direction(Square::H8, Direction::NorthEast, Bitboard{0}) ==
+    (
+        Bitboard{0}
+    )
+);

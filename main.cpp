@@ -8,7 +8,7 @@ int main() {
 
     std::cout << "Aribella Chess Engine \nVersion 0.1\n";
 
-    print_bitboard(knight_attacks(Square::A3));
+    print_bitboard(generate_attacks_in_direction(Square::E4, Direction::South, square_bb(Square::E7)));
 
     return 0;
 }
