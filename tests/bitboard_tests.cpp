@@ -1,3 +1,6 @@
+#include <cassert>
+#include <cstddef>
+
 #include "../src/core/bitboard.h"
 
 using namespace Aribella;
@@ -243,10 +246,10 @@ static_assert(
 );
 
 
-constexpr Bitboard blockers = square_bb(Square::D6) | square_bb(Square::D2)
-                              | square_bb(Square::F4) | square_bb(Square::B4);
+constexpr Bitboard rookBlockers = square_bb(Square::D6) | square_bb(Square::D2)
+                                  | square_bb(Square::F4) | square_bb(Square::B4);
 
-static_assert(generate_rook_attacks(Square::D4, blockers) ==
+static_assert(generate_rook_attacks(Square::D4, rookBlockers) ==
               (
                   square_bb(Square::D5) | square_bb(Square::D6) |
                   square_bb(Square::D3) | square_bb(Square::D2) |
@@ -255,18 +258,87 @@ static_assert(generate_rook_attacks(Square::D4, blockers) ==
               )
 );
 
-constexpr Bitboard blockers2 = square_bb(Square::B6) | square_bb(Square::F6)
-            | square_bb(Square::B2) | square_bb(Square::F2);
+constexpr Bitboard bishopBlockers = square_bb(Square::B6) | square_bb(Square::F6)
+                                    | square_bb(Square::B2) | square_bb(Square::F2);
 
-static_assert(generate_bishop_attacks(Square::D4, blockers2) ==
-    (
-        square_bb(Square::B6) | square_bb(Square::C5) |
-        square_bb(Square::E5) | square_bb(Square::F6) |
-        square_bb(Square::B2) | square_bb(Square::C3) |
-        square_bb(Square::E3) | square_bb(Square::F2)
-    )
+static_assert(generate_bishop_attacks(Square::D4, bishopBlockers) ==
+              (
+                  square_bb(Square::B6) | square_bb(Square::C5) |
+                  square_bb(Square::E5) | square_bb(Square::F6) |
+                  square_bb(Square::B2) | square_bb(Square::C3) |
+                  square_bb(Square::E3) | square_bb(Square::F2)
+              )
 );
 
+static_assert(generate_rook_relevant_mask(Square::D4)
+              ==
+              (
+                  square_bb
+                  (Square::D5)
+                  |
+                  square_bb(Square::D6)
+                  |
+                  square_bb(Square::D7)
+                  |
+                  square_bb(Square::D2)
+                  |
+                  square_bb(Square::D3)
+                  |
+                  square_bb(Square::B4)
+                  |
+                  square_bb(Square::C4)
+                  |
+                  square_bb(Square::E4)
+                  |
+                  square_bb(Square::F4)
+                  |
+                  square_bb(Square::G4)
+              )
+);
 
+static_assert(generate_rook_relevant_mask(Square::A1) ==
+              (
+                  square_bb(Square::A2)
+                  | square_bb(Square::A3)
+                  | square_bb(Square::A4)
+                  | square_bb(Square::A5)
+                  | square_bb(Square::A6)
+                  | square_bb(Square::A7)
+                  | square_bb(Square::B1)
+                  | square_bb(Square::C1)
+                  | square_bb(Square::D1)
+                  | square_bb(Square::E1)
+                  | square_bb(Square::F1)
+                  | square_bb(Square::G1)
+              )
+);
 
+static_assert(generate_bishop_relevant_mask(Square::D4) ==
+              (
+                  square_bb(Square::E5) | square_bb(Square::F6) | square_bb(Square::G7) |
+                  square_bb(Square::C5) | square_bb(Square::B6) |
+                  square_bb(Square::E3) | square_bb(Square::F2) |
+                  square_bb(Square::C3) | square_bb(Square::B2)
+              )
+);
 
+static_assert(generate_bishop_relevant_mask(Square::A1) ==
+              (
+                  square_bb(Square::B2)
+                  | square_bb(Square::C3)
+                  | square_bb(Square::D4)
+                  | square_bb(Square::E5)
+                  | square_bb(Square::F6)
+                  | square_bb(Square::G7)
+              )
+);
+
+constexpr Bitboard mask = square_bb(Square::B2) | square_bb(Square::C3) | square_bb(Square::D4);
+
+static_assert(set_occupancy(0, mask) == Bitboard{0});
+
+static_assert(set_occupancy(1, mask) == square_bb(Square::B2));
+
+static_assert(set_occupancy(3, mask) == (square_bb(Square::B2) | square_bb(Square::C3)));
+
+static_assert(set_occupancy(7, mask) == mask);

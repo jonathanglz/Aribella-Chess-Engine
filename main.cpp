@@ -8,7 +8,9 @@ int main() {
 
     std::cout << "Aribella Chess Engine \nVersion 0.1\n";
 
-    print_bitboard(generate_queen_attacks(Square::D4, Bitboard{0}));
+    Bitboard board = generate_rook_relevant_mask(Square::D4);
+
+    std::cout << popcount(board);
 
     return 0;
 }

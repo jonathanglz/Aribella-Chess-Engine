@@ -231,12 +231,126 @@ namespace Aribella {
                 generate_attacks_in_direction(sq, Direction::SouthWest, occupancy);
     }
 
-
     constexpr Bitboard generate_queen_attacks(Square sq, Bitboard occupancy) noexcept {
         return
                 generate_rook_attacks(sq, occupancy) |
                 generate_bishop_attacks(sq, occupancy);
     }
 
+    // See ChessProgramming.org - Magic Bitboards
+    constexpr Bitboard
+    generate_relevant_mask_in_direction(Square sq, Direction direction) noexcept {
+        assert(is_valid(sq));
 
+        Bitboard mask{0};
+        Bitboard current = square_bb(sq);
+
+        while (true) {
+            current = shift(current, direction);
+
+            if (current == 0) {
+                break;
+            }
+
+            if (const Bitboard next = shift(current, direction); next == 0) {
+                break;
+            }
+
+            mask |= current;
+        }
+
+        return mask;
+    }
+
+    constexpr Bitboard generate_rook_relevant_mask(Square sq) noexcept {
+        return
+                generate_relevant_mask_in_direction(sq, Direction::North) |
+                generate_relevant_mask_in_direction(sq, Direction::South) |
+                generate_relevant_mask_in_direction(sq, Direction::East) |
+                generate_relevant_mask_in_direction(sq, Direction::West);
+    }
+
+    constexpr Bitboard generate_bishop_relevant_mask(Square sq) noexcept {
+        return
+                generate_relevant_mask_in_direction(sq, Direction::NorthEast) |
+                generate_relevant_mask_in_direction(sq, Direction::NorthWest) |
+                generate_relevant_mask_in_direction(sq, Direction::SouthEast) |
+                generate_relevant_mask_in_direction(sq, Direction::SouthWest);
+    }
+
+
+    constexpr Bitboard set_occupancy(std::size_t index, Bitboard attack_mask) noexcept {
+        Bitboard occupancy{0};
+
+        const int bit_count = popcount(attack_mask);
+
+        for (int bit = 0; bit < bit_count; ++bit) {
+            const Square square = pop_lsb(attack_mask);
+
+            if (index & (std::size_t{1} << bit)) {
+                occupancy |= square_bb(square);
+            }
+        }
+
+        return occupancy;
+    }
+
+    // One entry pair
+    struct MagicEntry {
+        Bitboard occupancy{};
+        Bitboard attacks{};
+    };
+
+    // Set of entry pairs
+    template<std::size_t Capacity>
+    struct OccupancyAttackTable {
+        std::array<MagicEntry, Capacity> entries{};
+        std::size_t count{};
+    };
+
+    constexpr OccupancyAttackTable<MaxRookOccupancies>
+    generate_rook_occupancy_attack_table(Square sq) noexcept {
+        assert(is_valid(sq));
+
+        OccupancyAttackTable<MaxRookOccupancies> result{};
+
+        const Bitboard mask = generate_rook_relevant_mask(sq);
+        const auto relevant_bits = static_cast<std::size_t>(popcount(mask));
+
+        result.count = std::size_t{1} << relevant_bits;
+
+        assert(result.count <= result.entries.size());
+
+        for (std::size_t index = 0; index < result.count; ++index) {
+            const Bitboard occupancy = set_occupancy(index, mask);
+
+            result.entries[index] = {
+                .occupancy = occupancy, .attacks = generate_rook_attacks(sq, occupancy)
+            };
+        }
+        return result;
+    }
+
+    constexpr OccupancyAttackTable<MaxBishopOccupancies>
+    generate_bishop_occupancy_attack_table(Square sq) noexcept {
+        assert(is_valid(sq));
+
+        OccupancyAttackTable<MaxBishopOccupancies> result{};
+
+        const Bitboard mask = generate_bishop_relevant_mask(sq);
+        const auto relevant_bits = static_cast<std::size_t>(popcount(mask));
+
+        result.count = std::size_t{1} << relevant_bits;
+
+        assert(result.count <= result.entries.size());
+
+        for (std::size_t index = 0; index < result.count; ++index) {
+            const Bitboard occupancy = set_occupancy(index, mask);
+
+            result.entries[index] = {
+                .occupancy = occupancy, .attacks = generate_bishop_attacks(sq, occupancy)
+            };
+        }
+        return result;
+    }
 }

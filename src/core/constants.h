@@ -34,4 +34,15 @@ namespace Aribella {
         Rank5, Rank6, Rank7, Rank8
     };
 
+    inline constexpr std::size_t MaxRookRelevantBits{12};
+    inline constexpr std::size_t MaxBishopRelevantBits{9};
+
+    inline constexpr std::size_t MaxRookOccupancies{
+        std::size_t{1} << MaxBishopRelevantBits
+    };
+
+    inline constexpr std::size_t MaxBishopOccupancies{
+        std::size_t{1} << MaxBishopRelevantBits
+    };
+
 }
