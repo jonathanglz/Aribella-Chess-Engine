@@ -1,7 +1,5 @@
 #include "../src/movegen/magic.h"
 #include "../src/movegen/magic_constants.h"
-#include "../src/movegen/magic_tables.h"
-#include "magic_tests.h"
 
 
 using namespace Aribella;
