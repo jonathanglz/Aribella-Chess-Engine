@@ -5,11 +5,14 @@
 #include <cstddef>
 
 namespace Aribella {
-
     using Bitboard = std::uint64_t;
     using u8 = std::uint8_t;
     using i8 = std::int8_t;
 
+
+    // --------------------------------------------------
+    // Color
+    // --------------------------------------------------
 
     enum class Color : u8 {
         White = 0,
@@ -30,10 +33,13 @@ namespace Aribella {
         assert(is_valid(c));
 
         return c == Color::White
-            ? Color::Black
-            : Color::White;
+                   ? Color::Black
+                   : Color::White;
     }
 
+    // ---------------------------------------------------
+    // PieceType
+    // ---------------------------------------------------
     enum class PieceType : u8 {
         Pawn = 0,
         Knight,
@@ -53,6 +59,10 @@ namespace Aribella {
     constexpr bool is_valid(PieceType type) noexcept {
         return to_index(type) < to_index(PieceType::Count);
     }
+
+    // --------------------------------------------------
+    // Piece
+    // --------------------------------------------------
 
     enum class Piece : u8 {
         WhitePawn = 0,
@@ -102,6 +112,10 @@ namespace Aribella {
         );
     }
 
+    // ---------------------------------------------------------
+    // File
+    // ---------------------------------------------------------
+
     enum class File : u8 {
         A = 0,
         B,
@@ -123,6 +137,10 @@ namespace Aribella {
         return to_index(file) < to_index(File::Count);
     }
 
+    // ------------------------------------------------------
+    // Rank
+    // ------------------------------------------------------
+
     enum class Rank : u8 {
         R1 = 0,
         R2,
@@ -143,6 +161,10 @@ namespace Aribella {
     constexpr bool is_valid(Rank rank) noexcept {
         return to_index(rank) < to_index(Rank::Count);
     }
+
+    // ------------------------------------------------------
+    // Square
+    //-------------------------------------------------------
 
     enum class Square : u8 {
         A1, B1, C1, D1, E1, F1, G1, H1,
@@ -192,21 +214,24 @@ namespace Aribella {
         );
     }
 
+    // ------------------------------------------------------
+    // Direction
+    // ------------------------------------------------------
+
     enum class Direction : i8 {
-        North       = 8,
-        South       = -8,
+        North = 8,
+        South = -8,
 
-        East        = 1,
-        West        = -1,
+        East = 1,
+        West = -1,
 
-        NorthEast   = 9,
-        NorthWest   = 7,
-        SouthEast   = -7,
-        SouthWest   = -9
+        NorthEast = 9,
+        NorthWest = 7,
+        SouthEast = -7,
+        SouthWest = -9
     };
 
     constexpr int offset(Direction direction) noexcept {
         return static_cast<int>(direction);
     }
-
 }

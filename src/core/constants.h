@@ -38,7 +38,7 @@ namespace Aribella {
     inline constexpr std::size_t MaxBishopRelevantBits{9};
 
     inline constexpr std::size_t MaxRookOccupancies{
-        std::size_t{1} << MaxBishopRelevantBits
+        std::size_t{1} << MaxRookRelevantBits
     };
 
     inline constexpr std::size_t MaxBishopOccupancies{

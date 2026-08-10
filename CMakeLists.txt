@@ -8,7 +8,6 @@ add_executable(Aribella main.cpp
         src/core/bitboard.h
         src/core/types.h
         src/core/constants.h
-        src/engine/engine.cpp
         src/engine/engine.h
         src/position/move.cpp
         src/position/move.h
@@ -22,4 +21,11 @@ add_executable(Aribella main.cpp
         src/movegen/attacks.cpp
         src/movegen/attacks.h
         tests/bitboard_tests.cpp
-        tests/types_tests.cpp)
+        tests/types_tests.cpp
+        src/movegen/magic.cpp
+        src/movegen/magic.h
+        tests/attacks_tests.cpp
+        tests/magic_tests.cpp
+        src/movegen/magic_constants.h
+        src/movegen/magic_tables.h
+)
