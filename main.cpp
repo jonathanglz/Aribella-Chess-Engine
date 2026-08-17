@@ -11,12 +11,12 @@ int main() {
 
     Position p;
     p.set_piece(Color::White, PieceType::Rook, Square::D4);
+    p.set_piece(Color::Black, PieceType::Queen, Square::E8);
 
-    print_bitboard(p.occupancy());
 
-    p.clear();
+   Color c = p.color_at(Square::E8);
 
-    print_bitboard(p.occupancy());
+    std::cout << to_index(c) << std::endl;
 
     return 0;
 }

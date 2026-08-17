@@ -1,13 +1,16 @@
-//
-// Created by Tatan on 7/20/2026.
-//
+#pragma once
 
-#ifndef ARIBELLA_MOVEGEN_H
-#define ARIBELLA_MOVEGEN_H
+#include "../core/types.h"
+#include "../position/position.h"
+#include "magic_tables.h"
 
+namespace Aribella {
+    [[nodiscard]]
+    Bitboard rook_moves(const Position& position, Square sq, Color side) noexcept;
 
-class movegen {
-};
+    [[nodiscard]]
+    Bitboard bishop_moves(const Position& position, Square sq, Color side) noexcept;
 
-
-#endif //ARIBELLA_MOVEGEN_H
+    [[nodiscard]]
+    Bitboard queen_moves(const Position& position, Square sq, Color side) noexcept;
+}

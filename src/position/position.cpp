@@ -50,4 +50,34 @@ namespace Aribella {
         }
     }
 
+    Piece Position::piece_at(Square sq) const noexcept {
+        assert(is_valid(sq));
+
+        for (std::size_t color = 0; color < to_index(Color::Count); ++color) {
+            for (std::size_t type = 0; type < to_index(PieceType::Count); ++type) {
+                if (is_set(pieces_[color][type], sq)) {
+                    return make_piece(static_cast<Color>(color), static_cast<PieceType>(type));
+                }
+            }
+        }
+        return Piece::None;
+    }
+
+    bool Position::is_occupied(Square sq) const noexcept {
+        assert(is_valid(sq));
+
+        return is_set(occupancy(), sq);
+    }
+
+    Color Position::color_at(Square sq) const noexcept {
+        assert(is_valid(sq));
+        assert(is_occupied(sq));
+
+        if (is_set(occupancy(Color::White), sq)) {
+            return Color::White;
+        }
+
+        return Color::Black;
+    }
+
 }

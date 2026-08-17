@@ -23,6 +23,15 @@ namespace Aribella {
 
         void clear() noexcept;
 
+        [[nodiscard]]
+        Piece piece_at(Square sq) const noexcept;
+
+        [[nodiscard]]
+        bool is_occupied(Square sq) const noexcept;
+
+        [[nodiscard]]
+        Color color_at(Square sq) const noexcept;
+
     private:
         std::array<std::array<Bitboard, to_index(PieceType::Count)>, to_index(Color::Count)> pieces_{};
     };

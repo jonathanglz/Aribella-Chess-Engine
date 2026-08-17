@@ -6,8 +6,6 @@
 #include <cstdint>
 
 #include "../core/bitboard.h"
-#include "../core/constants.h"
-#include "../core/types.h"
 #include "attacks.h"
 
 namespace Aribella {
