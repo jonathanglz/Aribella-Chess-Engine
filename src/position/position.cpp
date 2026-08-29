@@ -43,8 +43,8 @@ namespace Aribella {
     }
 
     void Position::clear() noexcept {
-        for (auto& color_pieces : pieces_) {
-            for (Bitboard& bb : color_pieces) {
+        for (auto &color_pieces: pieces_) {
+            for (Bitboard &bb: color_pieces) {
                 bb = Bitboard{0};
             }
         }
@@ -80,4 +80,150 @@ namespace Aribella {
         return Color::Black;
     }
 
+    Square Position::en_passant_square() const noexcept {
+        return en_passant_square_;
+    }
+
+    void Position::set_en_passant_square(Square sq) noexcept {
+        assert(is_valid(sq));
+
+        en_passant_square_ = sq;
+    }
+
+    void Position::clear_en_passant_square() noexcept {
+        en_passant_square_ = Square::None;
+    }
+
+    CastlingRights Position::castling_rights() const noexcept {
+        return castling_rights_;
+    }
+
+    bool Position::can_castle(CastlingRights right) const noexcept {
+        return has_castling_rights(castling_rights_, right);
+    }
+
+    void Position::set_castling_rights(CastlingRights right) noexcept {
+        castling_rights_ = right;
+    }
+
+    void Position::remove_castling_rights(CastlingRights right) noexcept {
+        castling_rights_ = static_cast<CastlingRights>(
+            static_cast<u8>(castling_rights_) & ~static_cast<u8>(right)
+        );
+    }
+
+    Piece Position::remove_piece_at(Square sq) noexcept {
+        assert(is_valid(sq));
+
+        const Piece piece = piece_at(sq);
+
+        if (piece == Piece::None) {
+            return Piece::None;
+        }
+
+        remove_piece(color_of(piece), type_of(piece), sq);
+
+        return piece;
+    }
+
+    UndoState Position::make_move(Position& position, const Move& move) noexcept {
+        assert(is_valid(move.from));
+        assert(is_valid(move.to));
+
+        const Piece moving_piece = position.piece_at(move.from);
+
+        assert(moving_piece != Piece::None);
+
+        const Color side = color_of(moving_piece);
+
+        const PieceType type = type_of(moving_piece);
+
+        UndoState undo {
+            .captured_piece = Piece::None,
+            .castling_rights = position.castling_rights(),
+            .en_passant_square = position.en_passant_square()
+        };
+
+        position.clear_en_passant_square();
+
+        if (move.flag == MoveFlag::Capture || move.flag == MoveFlag::PromotionCapture) {
+            undo.captured_piece = position.remove_piece_at(move.to);
+
+            assert(undo.captured_piece != Piece::None);
+        }
+
+        if (move.flag == MoveFlag::EnPassant) {
+            assert(type == PieceType::Pawn);
+
+            const Square captured_square = (side == Color::White)
+            ? static_cast<Square>(to_index(move.from) - 8)
+            : static_cast<Square>(to_index(move.to) + 8);
+
+            undo.captured_piece = position.remove_piece_at(captured_square);
+
+            assert(undo.captured_piece != Piece::None);
+
+            assert(type_of(undo.captured_piece) == PieceType::Pawn);
+        }
+
+        position.remove_piece(side, type, move.from);
+
+        if (is_promotion(move)) {
+            assert(type == PieceType::Pawn);
+
+            position.set_piece(side, move.promotion, move.to);
+
+            position.set_piece(side, move.promotion, move.to);
+        }
+        else {
+            position.set_piece(side, type, move.to);
+        }
+
+        if (move.flag == MoveFlag::DoublePawnPush) {
+            assert(type == PieceType::Pawn);
+
+            const Square ep = (side == Color::White)
+            ? static_cast<Square>(to_index(move.from) + 8)
+            : static_cast<Square>(to_index(move.to) - 8);
+
+            position.set_en_passant_square(ep);
+        }
+
+        if (move.flag == MoveFlag::KingCastle) {
+            assert(type == PieceType::King);
+
+            if (side == Color::White) {
+                position.remove_piece(Color::White, PieceType::Rook, Square::H1);
+
+                position.set_piece(Color::White, PieceType::Rook, Square::F1);
+            }
+            else {
+                position.remove_piece(Color::Black, PieceType::Rook, Square::H8);
+
+                position.set_piece(Color::Black, PieceType::Rook, Square::F8);
+            }
+        }
+
+        if (move.flag == MoveFlag::QueenCastle) {
+            assert(type == PieceType::King);
+
+            if (side == Color::White) {
+                position.remove_piece(Color::White, PieceType::Rook, Square::A1);
+
+                position.set_piece(Color::White, PieceType::Rook, Square::D1);
+            }
+            else {
+                position.remove_piece(Color::Black, PieceType::Rook, Square::A8);
+
+                position.set_piece(Color::Black, PieceType::Rook, Square::D8);
+            }
+        }
+
+        if (type == PieceType::King)
+        return undo;
+    }
+
+    void Position::unmake_move(Position &position, const Move &move, const UndoState &undo) noexcept {
+
+    }
 }

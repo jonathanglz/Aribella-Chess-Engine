@@ -1,4 +1,4 @@
-#include "../src/movegen/magic.h"
+#include "../src/movegen/attacks.h"
 #include "../src/movegen/magic_constants.h"
 
 

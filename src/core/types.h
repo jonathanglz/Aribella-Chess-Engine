@@ -2,7 +2,6 @@
 
 #include <cstdint>
 #include <cassert>
-#include <cstddef>
 
 namespace Aribella {
     using Bitboard = std::uint64_t;
@@ -234,4 +233,26 @@ namespace Aribella {
     constexpr int offset(Direction direction) noexcept {
         return static_cast<int>(direction);
     }
+
+    enum class CastlingRights : u8 {
+        None = 0,
+        WhiteKingSide = 1 << 0,
+        WhiteQueenSide = 1 << 1,
+        BlackKingSide = 1 << 2,
+        BlackQueenSide = 1 << 3,
+    };
+
+    constexpr CastlingRights operator|(CastlingRights lhs, CastlingRights rhs) noexcept {
+        return static_cast<CastlingRights>(static_cast<u8>(lhs) | static_cast<u8>(rhs));
+    }
+
+    constexpr CastlingRights operator&(CastlingRights lhs, CastlingRights rhs) noexcept {
+        return static_cast<CastlingRights>(static_cast<u8>(lhs) & static_cast<u8>(rhs));
+    }
+
+    constexpr bool has_castling_rights(CastlingRights rights, CastlingRights right) noexcept {
+        return static_cast<u8>(rights & right) != 0;
+    }
+
+    
 }

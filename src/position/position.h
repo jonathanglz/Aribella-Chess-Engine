@@ -3,6 +3,8 @@
 #include <array>
 #include "../core/types.h"
 #include "../core/bitboard.h"
+#include "../movegen/move.h"
+#include "undo.h"
 
 namespace Aribella {
 
@@ -32,8 +34,37 @@ namespace Aribella {
         [[nodiscard]]
         Color color_at(Square sq) const noexcept;
 
+        [[nodiscard]]
+        Square en_passant_square() const noexcept;
+
+        void set_en_passant_square(Square sq) noexcept;
+
+        void clear_en_passant_square() noexcept;
+
+        [[nodiscard]]
+        CastlingRights castling_rights() const noexcept;
+
+        [[nodiscard]]
+        bool can_castle(CastlingRights right) const noexcept;
+
+        void set_castling_rights(CastlingRights right) noexcept;
+
+        void remove_castling_rights(CastlingRights right) noexcept;
+
+        [[nodiscard]]
+        Piece remove_piece_at(Square sq) noexcept;
+
+        [[nodiscard]]
+        static UndoState make_move(Position& position, const Move& move) noexcept;
+
+        static void unmake_move(Position& position, const Move& move, const UndoState& undo) noexcept;
+
     private:
         std::array<std::array<Bitboard, to_index(PieceType::Count)>, to_index(Color::Count)> pieces_{};
+
+        Square en_passant_square_{Square::None};
+
+        CastlingRights castling_rights_{CastlingRights::None};
     };
 
 }

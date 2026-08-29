@@ -9,8 +9,7 @@ add_executable(Aribella main.cpp
         src/core/types.h
         src/core/constants.h
         src/engine/engine.h
-        src/position/move.cpp
-        src/position/move.h
+        src/movegen/move.h
         src/position/fen.cpp
         src/position/fen.h
         src/position/position.cpp
@@ -18,14 +17,13 @@ add_executable(Aribella main.cpp
         src/position/zobrist.h
         src/movegen/movegen.cpp
         src/movegen/movegen.h
-        src/movegen/attacks.cpp
         src/movegen/attacks.h
         tests/bitboard_tests.cpp
         tests/types_tests.cpp
-        src/movegen/magic.cpp
-        src/movegen/magic.h
         tests/attacks_tests.cpp
         tests/magic_tests.cpp
         src/movegen/magic_constants.h
-        src/movegen/magic_tables.h
+        src/movegen/move_list.h
+        src/movegen/attacks.cpp
+        src/position/undo.h
 )

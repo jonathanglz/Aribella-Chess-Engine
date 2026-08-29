@@ -2,7 +2,6 @@
 #include <cassert>
 
 namespace Aribella {
-
     Bitboard rook_moves(const Position &position, Square sq, Color side) noexcept {
         assert(is_valid(sq));
         assert(is_valid(side));
@@ -27,4 +26,491 @@ namespace Aribella {
 
         return rook_moves(position, sq, side) | bishop_moves(position, sq, side);
     }
+
+    Bitboard knight_moves(const Position &position, Square sq, Color side) noexcept {
+        assert(is_valid(sq));
+        assert(is_valid(side));
+
+        const Bitboard attacks = knight_attacks(sq);
+
+        return attacks & ~position.occupancy(side);
+    }
+
+    Bitboard king_moves(const Position &position, Square sq, Color side) noexcept {
+        assert(is_valid(sq));
+        assert(is_valid(side));
+
+        const Bitboard attacks = king_attacks(sq);
+
+        return attacks & ~position.occupancy(side);
+    }
+
+    Bitboard pawn_single_pushes(const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
+
+        const Bitboard occupied = position.occupancy();
+
+        Bitboard pushes = (side == Color::White)
+                              ? shift_north(pawns)
+                              : shift_south(pawns);
+
+        pushes &= ~occupied;
+
+        return side == Color::White
+                   ? pushes & ~Rank8
+                   : pushes & ~Rank1;
+    }
+
+    Bitboard pawn_double_pushes(const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
+
+        const Bitboard occupied = position.occupancy();
+
+        if (side == Color::White) {
+            const Bitboard starting_pawns = pawns & Rank2;
+
+            const Bitboard single = shift_north(starting_pawns) & ~occupied;
+
+            return shift_north(single) & ~occupied;
+        }
+
+        const Bitboard starting_pawns = pawns & Rank7;
+
+        const Bitboard single = shift_south(starting_pawns) & ~occupied;
+
+        return shift_south(single) & ~occupied;
+    }
+
+    Bitboard pawn_captures(const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
+
+        const Bitboard captures = pawn_attacks(side, pawns) & position.occupancy(~side);
+
+        return side == Color::White
+                   ? captures & ~Rank8
+                   : captures & ~Rank1;
+    }
+
+    Bitboard pawn_promotion_pushes(const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
+
+        const Bitboard occupied = position.occupancy();
+
+        const Bitboard pushes = (side == Color::White)
+                                    ? shift_north(pawns)
+                                    : shift_south(pawns);
+
+        return side == Color::White
+                   ? pushes & ~occupied & Rank8
+                   : pushes & ~occupied & Rank1;
+    }
+
+    Bitboard pawn_promotion_captures(const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
+
+        const Bitboard captures = pawn_attacks(side, pawns) & position.occupancy(~side);
+
+        return side == Color::White
+                   ? captures & Rank8
+                   : captures & Rank1;
+    }
+
+    Bitboard pawn_en_passant_captures(const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const Square target = position.en_passant_square();
+
+        if (target == Square::None) {
+            return Bitboard{0};
+        }
+
+        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
+
+        const Bitboard attacks = pawn_attacks(side, pawns);
+
+        const Bitboard target_bb = square_bb(target);
+
+        return attacks & target_bb;
+    }
+
+    void add_moves_from_bitboard(MoveList &moves, const Position &position,
+                                 Square from, Bitboard destinations) noexcept {
+        assert(is_valid(from));
+
+        while (destinations) {
+            const Square to = pop_lsb(destinations);
+
+            const MoveFlag flag = position.is_occupied(to)
+                                      ? MoveFlag::Capture
+                                      : MoveFlag::Quiet;
+
+            moves.push_back(
+                Move{
+                    .from = from,
+                    .to = to,
+                    .flag = flag,
+                    .promotion = PieceType::None
+                }
+            );
+        }
+    }
+
+    void generate_rook_moves(MoveList &moves, const Position &position, Square sq, Color side) noexcept {
+        assert(is_valid(side));
+        assert(is_valid(sq));
+
+        const Bitboard destinations = rook_moves(position, sq, side);
+
+        add_moves_from_bitboard(moves, position, sq, destinations);
+    }
+
+    void generate_bishop_moves(MoveList &moves, const Position &position, Square sq, Color side) noexcept {
+        assert(is_valid(side));
+        assert(is_valid(sq));
+
+        const Bitboard destinations = bishop_moves(position, sq, side);
+
+        add_moves_from_bitboard(moves, position, sq, destinations);
+    }
+
+    void generate_queen_moves(MoveList &moves, const Position &position, Square sq, Color side) noexcept {
+        assert(is_valid(side));
+        assert(is_valid(sq));
+
+        const Bitboard destinations = queen_moves(position, sq, side);
+
+        add_moves_from_bitboard(moves, position, sq, destinations);
+    }
+
+    void generate_knight_moves(MoveList &moves, const Position &position, Square sq, Color side) noexcept {
+        assert(is_valid(side));
+        assert(is_valid(sq));
+
+        const Bitboard destinations = knight_moves(position, sq, side);
+
+        add_moves_from_bitboard(moves, position, sq, destinations);
+    }
+
+    void generate_king_moves(MoveList &moves, const Position &position, Square sq, Color side) noexcept {
+        assert(is_valid(side));
+        assert(is_valid(sq));
+
+        const Bitboard destinations = king_moves(position, sq, side);
+
+        add_moves_from_bitboard(moves, position, sq, destinations);
+    }
+
+    constexpr std::array<PieceType, 4> PromotionPieces{
+        PieceType::Queen,
+        PieceType::Rook,
+        PieceType::Bishop,
+        PieceType::Knight
+    };
+
+    void add_promotion_moves(MoveList &moves, Square from, Square to, MoveFlag flag) noexcept {
+        for (const PieceType promotion: PromotionPieces) {
+            moves.push_back(
+                Move{
+                    .from = from,
+                    .to = to,
+                    .flag = flag,
+                    .promotion = promotion
+                }
+            );
+        }
+    }
+
+    void generate_pawn_moves(MoveList &moves, const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        Bitboard pawns = position.pieces(side, PieceType::Pawn);
+
+        while (pawns) {
+            const Square from = pop_lsb(pawns);
+
+            const Bitboard from_bb = square_bb(from);
+
+            Bitboard single = (side == Color::White)
+                                  ? shift_north(from_bb)
+                                  : shift_south(from_bb);
+
+            single &= ~position.occupancy();
+
+            if (single) {
+                const Square to = lsb(single);
+
+                const bool promotion = (side == Color::White)
+                                           ? rank_of(to) == Rank::R8
+                                           : rank_of(to) == Rank::R1;
+
+                if (promotion) {
+                    add_promotion_moves(
+                        moves,
+                        from,
+                        to,
+                        MoveFlag::Promotion
+                    );
+                } else {
+                    moves.push_back(
+                        Move{
+                            .from = from,
+                            .to = to,
+                            .flag = MoveFlag::Quiet,
+                            .promotion = PieceType::None
+                        }
+                    );
+                }
+            }
+
+            const bool on_starting_rank = (side == Color::White)
+                                              ? rank_of(from) == Rank::R2
+                                              : rank_of(from) == Rank::R7;
+
+            if (on_starting_rank && single) {
+                Bitboard double_push = (side == Color::White)
+                                           ? shift_north(single)
+                                           : shift_south(single);
+
+                double_push &= ~position.occupancy();
+
+                if (double_push) {
+                    moves.push_back(
+                        Move{
+                            .from = from,
+                            .to = lsb(double_push),
+                            .flag = MoveFlag::DoublePawnPush,
+                            .promotion = PieceType::None
+                        }
+                    );
+                }
+            }
+
+            Bitboard captures = pawn_attacks(side, from_bb) & position.occupancy(~side);
+
+            while (captures) {
+                const Square to = pop_lsb(captures);
+
+                const bool promotion = (side == Color::White)
+                                           ? rank_of(to) == Rank::R8
+                                           : rank_of(to) == Rank::R1;
+
+                if (promotion) {
+                    add_promotion_moves(
+                        moves,
+                        from,
+                        to,
+                        MoveFlag::PromotionCapture
+                    );
+                } else {
+                    moves.push_back(
+                        Move{
+                            .from = from,
+                            .to = to,
+                            .flag = MoveFlag::Capture,
+                            .promotion = PieceType::None
+                        }
+                    );
+                }
+            }
+
+            const Square ep = position.en_passant_square();
+
+            if (ep != Square::None) {
+                const Bitboard ep_target = square_bb(ep);
+
+                if (pawn_attacks(side, from_bb) & ep_target) {
+                    moves.push_back(
+                        Move{
+                            .from = from,
+                            .to = ep,
+                            .flag = MoveFlag::EnPassant,
+                            .promotion = PieceType::None
+                        }
+                    );
+                }
+            }
+        }
+    }
+
+    MoveList generate_pseudo_legal_moves(const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        MoveList moves;
+
+        generate_pawn_moves(moves, position, side);
+
+        Bitboard knights = position.pieces(side, PieceType::Knight);
+
+        while (knights) {
+            const Square sq = pop_lsb(knights);
+
+            generate_knight_moves(moves, position, sq, side);
+        }
+
+        Bitboard rooks = position.pieces(side, PieceType::Rook);
+
+        while (rooks) {
+            const Square sq = pop_lsb(rooks);
+
+            generate_rook_moves(moves, position, sq, side);
+        }
+
+        Bitboard bishops = position.pieces(side, PieceType::Bishop);
+
+        while (bishops) {
+            const Square sq = pop_lsb(bishops);
+
+            generate_bishop_moves(moves, position, sq, side);
+        }
+
+        Bitboard queens = position.pieces(side, PieceType::Queen);
+
+        while (queens) {
+            const Square sq = pop_lsb(queens);
+
+            generate_queen_moves(moves, position, sq, side);
+        }
+
+        Bitboard kings = position.pieces(side, PieceType::King);
+
+        while (kings) {
+            const Square sq = pop_lsb(kings);
+
+            generate_king_moves(moves, position, sq, side);
+            generate_castling_moves(moves, position, side);
+        }
+
+        return moves;
+    }
+
+    void generate_castling_moves(MoveList &moves, const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const Bitboard occupied = position.occupancy();
+
+        if (side == Color::White) {
+            if (position.can_castle(CastlingRights::WhiteKingSide)
+                && !is_set(occupied, Square::F1)
+                && !is_set(occupied, Square::G1)) {
+                moves.push_back(
+                    Move{
+                        .from = Square::E1,
+                        .to = Square::G1,
+                        .flag = MoveFlag::KingCastle,
+                        .promotion = PieceType::None
+                    }
+                );
+            }
+
+            if (position.can_castle(CastlingRights::WhiteQueenSide)
+                && !is_set(occupied, Square::D1)
+                && !is_set(occupied, Square::C1)
+                && !is_set(occupied, Square::B1)) {
+                moves.push_back(
+                    Move{
+                        .from = Square::E1,
+                        .to = Square::C1,
+                        .flag = MoveFlag::QueenCastle,
+                        .promotion = PieceType::None
+                    }
+                );
+            }
+
+            return;
+        }
+
+        if (position.can_castle(CastlingRights::BlackKingSide)
+            && !is_set(occupied, Square::F8)
+            && !is_set(occupied, Square::G8)) {
+            moves.push_back(
+                Move{
+                    .from = Square::E8,
+                    .to = Square::G8,
+                    .flag = MoveFlag::KingCastle,
+                    .promotion = PieceType::None
+                }
+            );
+        }
+
+        if (position.can_castle(CastlingRights::BlackQueenSide)
+            && !is_set(occupied, Square::D8)
+            && !is_set(occupied, Square::C8)
+            && !is_set(occupied, Square::B8)) {
+            moves.push_back(
+                Move{
+                    .from = Square::E8,
+                    .to = Square::C8,
+                    .flag = MoveFlag::QueenCastle,
+                    .promotion = PieceType::None
+                }
+            );
+        }
+    }
+
+    bool is_square_attacked(const Position &position, Square sq, Color by_side) noexcept {
+        assert(is_valid(by_side));
+        assert(is_valid(sq));
+
+        const Bitboard target = square_bb(sq);
+
+        const Bitboard enemy_pawns = position.pieces(by_side, PieceType::Pawn);
+
+        if (pawn_attacks(by_side, enemy_pawns) & target) {
+            return true;
+        }
+
+        const Bitboard enemy_knights = position.pieces(by_side, PieceType::Knight);
+
+        if (knight_attacks(sq) & enemy_knights) {
+            return true;
+        }
+
+        const Bitboard enemy_king = position.pieces(by_side, PieceType::King);
+
+        if (king_attacks(sq) & enemy_king) {
+            return true;
+        }
+
+        const Bitboard occupied = position.occupancy();
+
+        const Bitboard diagonal_attackers = position.pieces(by_side, PieceType::Bishop)
+                                            | position.pieces(by_side, PieceType::Queen);
+
+        if (bishop_attacks(sq, occupied) & diagonal_attackers) {
+            return true;
+        }
+
+        const Bitboard orthogonal_attackers = position.pieces(by_side, PieceType::Rook)
+                                              | position.pieces(by_side, PieceType::Queen);
+
+        if (rook_attacks(sq, occupied) & orthogonal_attackers) {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool in_check(const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const Bitboard king = position.pieces(side, PieceType::King);
+
+        assert(popcount(king) == 1);
+
+        const Square king_square = lsb(king);
+
+        return is_square_attacked(position, king_square, ~side);
+    }
+
+    
 }
