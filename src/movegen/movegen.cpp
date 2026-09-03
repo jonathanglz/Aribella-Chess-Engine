@@ -2,6 +2,50 @@
 #include <cassert>
 
 namespace Aribella {
+    namespace {
+        void add_moves_from_bitboard(MoveList &moves, const Position &position,
+                                     Square from, Bitboard destinations) noexcept {
+            assert(is_valid(from));
+
+            while (destinations) {
+                const Square to = pop_lsb(destinations);
+
+                const MoveFlag flag = position.is_occupied(to)
+                                          ? MoveFlag::Capture
+                                          : MoveFlag::Quiet;
+
+                moves.push_back(
+                    Move{
+                        .from = from,
+                        .to = to,
+                        .flag = flag,
+                        .promotion = PieceType::None
+                    }
+                );
+            }
+        }
+
+        constexpr std::array<PieceType, 4> PromotionPieces{
+            PieceType::Queen,
+            PieceType::Rook,
+            PieceType::Bishop,
+            PieceType::Knight
+        };
+
+        void add_promotion_moves(MoveList &moves, Square from, Square to, MoveFlag flag) noexcept {
+            for (const PieceType promotion: PromotionPieces) {
+                moves.push_back(
+                    Move{
+                        .from = from,
+                        .to = to,
+                        .flag = flag,
+                        .promotion = promotion
+                    }
+                );
+            }
+        }
+    }
+
     Bitboard rook_moves(const Position &position, Square sq, Color side) noexcept {
         assert(is_valid(sq));
         assert(is_valid(side));
@@ -43,126 +87,6 @@ namespace Aribella {
         const Bitboard attacks = king_attacks(sq);
 
         return attacks & ~position.occupancy(side);
-    }
-
-    Bitboard pawn_single_pushes(const Position &position, Color side) noexcept {
-        assert(is_valid(side));
-
-        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
-
-        const Bitboard occupied = position.occupancy();
-
-        Bitboard pushes = (side == Color::White)
-                              ? shift_north(pawns)
-                              : shift_south(pawns);
-
-        pushes &= ~occupied;
-
-        return side == Color::White
-                   ? pushes & ~Rank8
-                   : pushes & ~Rank1;
-    }
-
-    Bitboard pawn_double_pushes(const Position &position, Color side) noexcept {
-        assert(is_valid(side));
-
-        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
-
-        const Bitboard occupied = position.occupancy();
-
-        if (side == Color::White) {
-            const Bitboard starting_pawns = pawns & Rank2;
-
-            const Bitboard single = shift_north(starting_pawns) & ~occupied;
-
-            return shift_north(single) & ~occupied;
-        }
-
-        const Bitboard starting_pawns = pawns & Rank7;
-
-        const Bitboard single = shift_south(starting_pawns) & ~occupied;
-
-        return shift_south(single) & ~occupied;
-    }
-
-    Bitboard pawn_captures(const Position &position, Color side) noexcept {
-        assert(is_valid(side));
-
-        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
-
-        const Bitboard captures = pawn_attacks(side, pawns) & position.occupancy(~side);
-
-        return side == Color::White
-                   ? captures & ~Rank8
-                   : captures & ~Rank1;
-    }
-
-    Bitboard pawn_promotion_pushes(const Position &position, Color side) noexcept {
-        assert(is_valid(side));
-
-        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
-
-        const Bitboard occupied = position.occupancy();
-
-        const Bitboard pushes = (side == Color::White)
-                                    ? shift_north(pawns)
-                                    : shift_south(pawns);
-
-        return side == Color::White
-                   ? pushes & ~occupied & Rank8
-                   : pushes & ~occupied & Rank1;
-    }
-
-    Bitboard pawn_promotion_captures(const Position &position, Color side) noexcept {
-        assert(is_valid(side));
-
-        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
-
-        const Bitboard captures = pawn_attacks(side, pawns) & position.occupancy(~side);
-
-        return side == Color::White
-                   ? captures & Rank8
-                   : captures & Rank1;
-    }
-
-    Bitboard pawn_en_passant_captures(const Position &position, Color side) noexcept {
-        assert(is_valid(side));
-
-        const Square target = position.en_passant_square();
-
-        if (target == Square::None) {
-            return Bitboard{0};
-        }
-
-        const Bitboard pawns = position.pieces(side, PieceType::Pawn);
-
-        const Bitboard attacks = pawn_attacks(side, pawns);
-
-        const Bitboard target_bb = square_bb(target);
-
-        return attacks & target_bb;
-    }
-
-    void add_moves_from_bitboard(MoveList &moves, const Position &position,
-                                 Square from, Bitboard destinations) noexcept {
-        assert(is_valid(from));
-
-        while (destinations) {
-            const Square to = pop_lsb(destinations);
-
-            const MoveFlag flag = position.is_occupied(to)
-                                      ? MoveFlag::Capture
-                                      : MoveFlag::Quiet;
-
-            moves.push_back(
-                Move{
-                    .from = from,
-                    .to = to,
-                    .flag = flag,
-                    .promotion = PieceType::None
-                }
-            );
-        }
     }
 
     void generate_rook_moves(MoveList &moves, const Position &position, Square sq, Color side) noexcept {
@@ -210,26 +134,6 @@ namespace Aribella {
         add_moves_from_bitboard(moves, position, sq, destinations);
     }
 
-    constexpr std::array<PieceType, 4> PromotionPieces{
-        PieceType::Queen,
-        PieceType::Rook,
-        PieceType::Bishop,
-        PieceType::Knight
-    };
-
-    void add_promotion_moves(MoveList &moves, Square from, Square to, MoveFlag flag) noexcept {
-        for (const PieceType promotion: PromotionPieces) {
-            moves.push_back(
-                Move{
-                    .from = from,
-                    .to = to,
-                    .flag = flag,
-                    .promotion = promotion
-                }
-            );
-        }
-    }
-
     void generate_pawn_moves(MoveList &moves, const Position &position, Color side) noexcept {
         assert(is_valid(side));
 
@@ -254,12 +158,7 @@ namespace Aribella {
                                            : rank_of(to) == Rank::R1;
 
                 if (promotion) {
-                    add_promotion_moves(
-                        moves,
-                        from,
-                        to,
-                        MoveFlag::Promotion
-                    );
+                    add_promotion_moves(moves, from, to, MoveFlag::Promotion);
                 } else {
                     moves.push_back(
                         Move{
@@ -511,6 +410,4 @@ namespace Aribella {
 
         return is_square_attacked(position, king_square, ~side);
     }
-
-    
 }
