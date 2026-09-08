@@ -241,6 +241,90 @@ namespace Aribella {
         }
     }
 
+    void generate_castling_moves(MoveList &moves, const Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const Color enemy = ~side;
+
+        if (side == Color::White) {
+            if (position.can_castle(CastlingRights::WhiteKingSide)
+                && position.piece_at(Square::E1) == Piece::WhiteKing
+                && position.piece_at(Square::H1) == Piece::WhiteRook
+                && !position.is_occupied(Square::F1)
+                && !position.is_occupied(Square::G1)
+                && !is_square_attacked(position, Square::F1, enemy)
+                && !is_square_attacked(position, Square::G1, enemy)
+            ) {
+                moves.push_back(
+                    Move{
+                        .from = Square::E1,
+                        .to = Square::G1,
+                        .flag = MoveFlag::KingCastle,
+                        .promotion = PieceType::None
+                    }
+                );
+            }
+
+            if (position.can_castle(CastlingRights::WhiteQueenSide)
+                && position.piece_at(Square::E1) == Piece::WhiteKing
+                && position.piece_at(Square::A1) == Piece::WhiteRook
+                && !position.is_occupied(Square::D1)
+                && !position.is_occupied(Square::C1)
+                && !position.is_occupied(Square::B1)
+                && !is_square_attacked(position, Square::D1, enemy)
+                && !is_square_attacked(position, Square::C1, enemy)
+            ) {
+                moves.push_back(
+                    Move{
+                        .from = Square::E1,
+                        .to = Square::C1,
+                        .flag = MoveFlag::QueenCastle,
+                        .promotion = PieceType::None
+                    }
+                );
+            }
+
+            return;
+        }
+
+        if (position.can_castle(CastlingRights::BlackKingSide)
+            && position.piece_at(Square::E8) == Piece::BlackKing
+            && position.piece_at(Square::H8) == Piece::BlackRook
+            && !position.is_occupied(Square::F8)
+            && !position.is_occupied(Square::G8)
+            && !is_square_attacked(position, Square::F8, enemy)
+            && !is_square_attacked(position, Square::G8, enemy)
+        ) {
+            moves.push_back(
+                Move{
+                    .from = Square::E8,
+                    .to = Square::G8,
+                    .flag = MoveFlag::KingCastle,
+                    .promotion = PieceType::None
+                }
+            );
+        }
+
+        if (position.can_castle(CastlingRights::BlackQueenSide)
+            && position.piece_at(Square::E8) == Piece::BlackKing
+            && position.piece_at(Square::A8) == Piece::BlackRook
+            && !position.is_occupied(Square::D8)
+            && !position.is_occupied(Square::C8)
+            && !position.is_occupied(Square::B8)
+            && !is_square_attacked(position, Square::D8, enemy)
+            && !is_square_attacked(position, Square::C8, enemy)
+        ) {
+            moves.push_back(
+                Move{
+                    .from = Square::E8,
+                    .to = Square::C8,
+                    .flag = MoveFlag::QueenCastle,
+                    .promotion = PieceType::None
+                }
+            );
+        }
+    }
+
     MoveList generate_pseudo_legal_moves(const Position &position, Color side) noexcept {
         assert(is_valid(side));
 
@@ -290,70 +374,6 @@ namespace Aribella {
         }
 
         return moves;
-    }
-
-    void generate_castling_moves(MoveList &moves, const Position &position, Color side) noexcept {
-        assert(is_valid(side));
-
-        const Bitboard occupied = position.occupancy();
-
-        if (side == Color::White) {
-            if (position.can_castle(CastlingRights::WhiteKingSide)
-                && !is_set(occupied, Square::F1)
-                && !is_set(occupied, Square::G1)) {
-                moves.push_back(
-                    Move{
-                        .from = Square::E1,
-                        .to = Square::G1,
-                        .flag = MoveFlag::KingCastle,
-                        .promotion = PieceType::None
-                    }
-                );
-            }
-
-            if (position.can_castle(CastlingRights::WhiteQueenSide)
-                && !is_set(occupied, Square::D1)
-                && !is_set(occupied, Square::C1)
-                && !is_set(occupied, Square::B1)) {
-                moves.push_back(
-                    Move{
-                        .from = Square::E1,
-                        .to = Square::C1,
-                        .flag = MoveFlag::QueenCastle,
-                        .promotion = PieceType::None
-                    }
-                );
-            }
-
-            return;
-        }
-
-        if (position.can_castle(CastlingRights::BlackKingSide)
-            && !is_set(occupied, Square::F8)
-            && !is_set(occupied, Square::G8)) {
-            moves.push_back(
-                Move{
-                    .from = Square::E8,
-                    .to = Square::G8,
-                    .flag = MoveFlag::KingCastle,
-                    .promotion = PieceType::None
-                }
-            );
-        }
-
-        if (position.can_castle(CastlingRights::BlackQueenSide)
-            && !is_set(occupied, Square::D8)
-            && !is_set(occupied, Square::C8)
-            && !is_set(occupied, Square::B8)) {
-            moves.push_back(
-                Move{
-                    .from = Square::E8,
-                    .to = Square::C8,
-                    .flag = MoveFlag::QueenCastle,
-                    .promotion = PieceType::None
-                }
-            );
-        }
     }
 
     bool is_square_attacked(const Position &position, Square sq, Color by_side) noexcept {

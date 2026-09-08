@@ -106,7 +106,7 @@ namespace Aribella {
         castling_rights_ = right;
     }
 
-    void Position::remove_castling_rights(CastlingRights right) noexcept {
+    void Position::remove_castling_right(CastlingRights right) noexcept {
         castling_rights_ = static_cast<CastlingRights>(
             static_cast<u8>(castling_rights_) & ~static_cast<u8>(right)
         );
@@ -126,7 +126,7 @@ namespace Aribella {
         return piece;
     }
 
-    UndoState Position::make_move(Position& position, const Move& move) noexcept {
+    UndoState Position::make_move(Position &position, const Move &move) noexcept {
         assert(is_valid(move.from));
         assert(is_valid(move.to));
 
@@ -138,26 +138,35 @@ namespace Aribella {
 
         const PieceType type = type_of(moving_piece);
 
-        UndoState undo {
+        // Remember the old state before this move might destroy or overwrite
+        UndoState undo{
             .captured_piece = Piece::None,
             .castling_rights = position.castling_rights(),
             .en_passant_square = position.en_passant_square()
         };
 
+        // clear old en passant target
         position.clear_en_passant_square();
 
+        // ---------------------------------
+        // Captures
+        // ---------------------------------
         if (move.flag == MoveFlag::Capture || move.flag == MoveFlag::PromotionCapture) {
             undo.captured_piece = position.remove_piece_at(move.to);
 
             assert(undo.captured_piece != Piece::None);
         }
 
+        // ---------------------------------
+        // En passant captures
+        // ---------------------------------
+
         if (move.flag == MoveFlag::EnPassant) {
             assert(type == PieceType::Pawn);
 
             const Square captured_square = (side == Color::White)
-            ? static_cast<Square>(to_index(move.from) - 8)
-            : static_cast<Square>(to_index(move.to) + 8);
+                                               ? static_cast<Square>(to_index(move.to) - 8)
+                                               : static_cast<Square>(to_index(move.to) + 8);
 
             undo.captured_piece = position.remove_piece_at(captured_square);
 
@@ -166,29 +175,41 @@ namespace Aribella {
             assert(type_of(undo.captured_piece) == PieceType::Pawn);
         }
 
+        // ---------------------------------
+        // Remove moving piece from starting square
+        // ---------------------------------
         position.remove_piece(side, type, move.from);
 
+        // ---------------------------------
+        // Promotion
+        // ---------------------------------
         if (is_promotion(move)) {
             assert(type == PieceType::Pawn);
 
+            // promotion move
             position.set_piece(side, move.promotion, move.to);
-
-            position.set_piece(side, move.promotion, move.to);
-        }
-        else {
+        } else {
+            // normal move, capture, double push, en passant, castling king move
             position.set_piece(side, type, move.to);
         }
 
+        // ---------------------------------
+        // Double pawn push
+        // ---------------------------------
         if (move.flag == MoveFlag::DoublePawnPush) {
             assert(type == PieceType::Pawn);
 
+            // create new en passant square
             const Square ep = (side == Color::White)
-            ? static_cast<Square>(to_index(move.from) + 8)
-            : static_cast<Square>(to_index(move.to) - 8);
+                                  ? static_cast<Square>(to_index(move.from) + 8)
+                                  : static_cast<Square>(to_index(move.from) - 8);
 
             position.set_en_passant_square(ep);
         }
 
+        // ---------------------------------
+        // King side castling
+        // ---------------------------------
         if (move.flag == MoveFlag::KingCastle) {
             assert(type == PieceType::King);
 
@@ -196,14 +217,16 @@ namespace Aribella {
                 position.remove_piece(Color::White, PieceType::Rook, Square::H1);
 
                 position.set_piece(Color::White, PieceType::Rook, Square::F1);
-            }
-            else {
+            } else {
                 position.remove_piece(Color::Black, PieceType::Rook, Square::H8);
 
                 position.set_piece(Color::Black, PieceType::Rook, Square::F8);
             }
         }
 
+        // ---------------------------------
+        // Queen side castling
+        // ---------------------------------
         if (move.flag == MoveFlag::QueenCastle) {
             assert(type == PieceType::King);
 
@@ -211,19 +234,101 @@ namespace Aribella {
                 position.remove_piece(Color::White, PieceType::Rook, Square::A1);
 
                 position.set_piece(Color::White, PieceType::Rook, Square::D1);
-            }
-            else {
+            } else {
                 position.remove_piece(Color::Black, PieceType::Rook, Square::A8);
 
                 position.set_piece(Color::Black, PieceType::Rook, Square::D8);
             }
         }
 
-        if (type == PieceType::King)
+        // ---------------------------------
+        // Moving a king permanently removes both castling rights
+        // ---------------------------------
+        if (type == PieceType::King) {
+            if (side == Color::White) {
+                position.remove_castling_right(CastlingRights::WhiteKingSide);
+
+                position.remove_castling_right(CastlingRights::WhiteQueenSide);
+            } else {
+                position.remove_castling_right(CastlingRights::BlackKingSide);
+
+                position.remove_castling_right(CastlingRights::BlackQueenSide);
+            }
+        }
+
+        // ---------------------------------
+        // Moving a rook from its original square removes
+        // the corresponding castling right.
+        // ---------------------------------
+        if (type == PieceType::Rook) {
+            switch (move.from) {
+                case Square::H1:
+                    position.remove_castling_right(
+                        CastlingRights::WhiteKingSide
+                    );
+                    break;
+
+                case Square::A1:
+                    position.remove_castling_right(
+                        CastlingRights::WhiteQueenSide
+                    );
+                    break;
+
+                case Square::H8:
+                    position.remove_castling_right(
+                        CastlingRights::BlackKingSide
+                    );
+                    break;
+
+                case Square::A8:
+                    position.remove_castling_right(
+                        CastlingRights::BlackQueenSide
+                    );
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
+        // ----------------------------------
+        // Capturing a rook on its original square also removes
+        // that side's corresponding castling right.
+        // ----------------------------------
+        if (undo.captured_piece != Piece::None && type_of(undo.captured_piece) == PieceType::Rook) {
+            switch (move.to) {
+                case Square::H1:
+                    position.remove_castling_right(
+                        CastlingRights::WhiteKingSide
+                    );
+                    break;
+
+                case Square::A1:
+                    position.remove_castling_right(
+                        CastlingRights::WhiteQueenSide
+                    );
+                    break;
+
+                case Square::H8:
+                    position.remove_castling_right(
+                        CastlingRights::BlackKingSide
+                    );
+                    break;
+
+                case Square::A8:
+                    position.remove_castling_right(
+                        CastlingRights::BlackQueenSide
+                    );
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         return undo;
     }
 
     void Position::unmake_move(Position &position, const Move &move, const UndoState &undo) noexcept {
-
     }
 }

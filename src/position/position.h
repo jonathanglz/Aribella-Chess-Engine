@@ -49,15 +49,15 @@ namespace Aribella {
 
         void set_castling_rights(CastlingRights right) noexcept;
 
-        void remove_castling_rights(CastlingRights right) noexcept;
+        void remove_castling_right(CastlingRights right) noexcept;
 
         [[nodiscard]]
         Piece remove_piece_at(Square sq) noexcept;
 
         [[nodiscard]]
-        static UndoState make_move(Position& position, const Move& move) noexcept;
+        UndoState make_move(Position& position, const Move& move) noexcept;
 
-        static void unmake_move(Position& position, const Move& move, const UndoState& undo) noexcept;
+        void unmake_move(Position& position, const Move& move, const UndoState& undo) noexcept;
 
     private:
         std::array<std::array<Bitboard, to_index(PieceType::Count)>, to_index(Color::Count)> pieces_{};
