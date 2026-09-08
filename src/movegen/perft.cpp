@@ -43,13 +43,14 @@ namespace Aribella {
     }
 
 
-    std::uint64_t perft(Position &position, Color side, int depth) {
-        assert(is_valid(side));
+    std::uint64_t perft(Position &position, int depth) {
         assert(depth >= 0);
 
         if (depth == 0) {
             return 1;
         }
+
+        const Color side = position.side_to_move();
 
         const MoveList moves = generate_legal_moves(position, side);
 
@@ -58,20 +59,24 @@ namespace Aribella {
         for (std::size_t i = 0; i < moves.size(); ++i) {
             const Move move = moves[i];
 
+            const Position before = position;
+
             const UndoState undo = position.make_move(move);
 
-            nodes += perft(position, ~side, depth - 1);
+            nodes += perft(position, depth - 1);
 
             position.unmake_move(move, undo);
+
+            assert(position == before);
         }
 
         return nodes;
     }
 
-    void pertf_divide(Position &position, Color side, int depth) {
-        assert(is_valid(side));
+    void pertf_divide(Position &position, int depth) {
         assert(depth >= 1);
 
+        const Color side = position.side_to_move();
         const MoveList moves = generate_legal_moves(position, side);
 
         std::uint64_t total{0};
@@ -81,7 +86,7 @@ namespace Aribella {
 
             const UndoState undo = position.make_move(move);
 
-            const std::uint64_t nodes = perft(position, ~side, depth - 1);
+            const std::uint64_t nodes = perft(position, depth - 1);
 
             position.unmake_move(move, undo);
 
@@ -94,4 +99,5 @@ namespace Aribella {
 
         std::cout << "\nTotal: " << total << '\n';
     }
+
 }

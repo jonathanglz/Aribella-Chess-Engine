@@ -1,6 +1,8 @@
 #pragma once
 
 #include <array>
+#include <string_view>
+
 #include "../core/bitboard.h"
 #include "../movegen/move.h"
 #include "undo.h"
@@ -63,12 +65,29 @@ namespace Aribella {
 
         void set_start_position() noexcept;
 
+        [[nodiscard]]
+        bool set_from_fen(std::string_view fen) noexcept;
+
+        [[nodiscard]]
+        Color side_to_move() const noexcept;
+
+        [[nodiscard]]
+        std::uint16_t halfmove_clock() const noexcept;
+
+        [[nodiscard]]
+        std::uint16_t fullmove_number() const noexcept;
+
     private:
         std::array<std::array<Bitboard, to_index(PieceType::Count)>, to_index(Color::Count)> pieces_{};
 
         Square en_passant_square_{Square::None};
 
         CastlingRights castling_rights_{CastlingRights::None};
+
+        Color side_to_move_{Color::White};
+
+        std::uint16_t halfmove_clock_{0};
+        std::uint16_t fullmove_number_{0};
     };
 
 }

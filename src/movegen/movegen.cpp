@@ -252,6 +252,7 @@ namespace Aribella {
                 && position.piece_at(Square::H1) == Piece::WhiteRook
                 && !position.is_occupied(Square::F1)
                 && !position.is_occupied(Square::G1)
+                && !in_check(position, Color::White)
                 && !is_square_attacked(position, Square::F1, enemy)
                 && !is_square_attacked(position, Square::G1, enemy)
             ) {
@@ -271,6 +272,7 @@ namespace Aribella {
                 && !position.is_occupied(Square::D1)
                 && !position.is_occupied(Square::C1)
                 && !position.is_occupied(Square::B1)
+                && !in_check(position, Color::White)
                 && !is_square_attacked(position, Square::D1, enemy)
                 && !is_square_attacked(position, Square::C1, enemy)
             ) {
@@ -292,6 +294,7 @@ namespace Aribella {
             && position.piece_at(Square::H8) == Piece::BlackRook
             && !position.is_occupied(Square::F8)
             && !position.is_occupied(Square::G8)
+            && !in_check(position, Color::Black)
             && !is_square_attacked(position, Square::F8, enemy)
             && !is_square_attacked(position, Square::G8, enemy)
         ) {
@@ -311,6 +314,7 @@ namespace Aribella {
             && !position.is_occupied(Square::D8)
             && !position.is_occupied(Square::C8)
             && !position.is_occupied(Square::B8)
+            && !in_check(position, Color::Black)
             && !is_square_attacked(position, Square::D8, enemy)
             && !is_square_attacked(position, Square::C8, enemy)
         ) {

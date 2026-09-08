@@ -1,5 +1,7 @@
 #include "position.h"
 
+#include <charconv>
+#include <string_view>
 #include <cassert>
 
 namespace Aribella {
@@ -145,15 +147,18 @@ namespace Aribella {
         // Remember the old state before this move might destroy or overwrite
         UndoState undo{
             .captured_piece = Piece::None,
-            .castling_rights = castling_rights(),
-            .en_passant_square = en_passant_square()
+            .castling_rights = castling_rights_,
+            .en_passant_square = en_passant_square_,
+            .halfmove_clock = halfmove_clock_,
+            .fullmove_number = fullmove_number_,
+            .side_to_move = side_to_move_
         };
 
         // clear old en passant target
         clear_en_passant_square();
 
         // ---------------------------------
-        // Captures
+        // Normal Capture / promotion capture
         // ---------------------------------
         if (move.flag == MoveFlag::Capture || move.flag == MoveFlag::PromotionCapture) {
             undo.captured_piece = remove_piece_at(move.to);
@@ -330,6 +335,29 @@ namespace Aribella {
             }
         }
 
+        // ---------------------------------------------------------
+        // Update halfmove clock
+        // ---------------------------------------------------------
+        if (type == PieceType::Pawn || undo.captured_piece != Piece::None) {
+            halfmove_clock_ = 0;
+        } else {
+            ++halfmove_clock_;
+        }
+
+
+        // ---------------------------------------------------------
+        // Update fullmove number
+        // ---------------------------------------------------------
+        if (side == Color::Black) {
+            ++fullmove_number_;
+        }
+
+
+        // ---------------------------------------------------------
+        // Switch side to move
+        // ---------------------------------------------------------
+        side_to_move_ = ~side;
+
         return undo;
     }
 
@@ -412,73 +440,336 @@ namespace Aribella {
             set_piece(color_of(undo.captured_piece), PieceType::Pawn, captured_square);
         }
 
-        // ---------------------------------------------------------
-        // Restore castling rights
-        // ---------------------------------------------------------
-        set_castling_rights(undo.castling_rights);
+        castling_rights_= undo.castling_rights;
 
-        // ---------------------------------------------------------
-        // Restore previous en passant square
-        // ---------------------------------------------------------
-        if (undo.en_passant_square == Square::None) {
-            clear_en_passant_square();
-        } else {
-            set_en_passant_square(undo.en_passant_square);
-        }
+        en_passant_square_ = undo.en_passant_square;
+
+        halfmove_clock_ = undo.halfmove_clock;
+
+        fullmove_number_ = undo.fullmove_number;
+
+        side_to_move_ = undo.side_to_move;
+
     }
 
     void Position::set_start_position() noexcept {
-        clear();
+        const bool ok = set_from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+        assert(ok);
+    }
 
-        // White pieces
-        set_piece(Color::White, PieceType::Rook, Square::A1);
-        set_piece(Color::White, PieceType::Knight, Square::B1);
-        set_piece(Color::White, PieceType::Bishop, Square::C1);
-        set_piece(Color::White, PieceType::Queen, Square::D1);
-        set_piece(Color::White, PieceType::King, Square::E1);
-        set_piece(Color::White, PieceType::Bishop, Square::F1);
-        set_piece(Color::White, PieceType::Knight, Square::G1);
-        set_piece(Color::White, PieceType::Rook, Square::H1);
+    bool Position::set_from_fen(std::string_view fen) noexcept {
+        Position parsed;
+        parsed.clear();
 
-        for (std::size_t file = 0; file < to_index(File::Count); ++file) {
-            set_piece(
-                Color::White,
-                PieceType::Pawn,
-                make_square(
-                    static_cast<File>(file),
-                    Rank::R2
-                )
-            );
+        std::string_view fields[6];
+
+        std::size_t start = 0;
+
+        for (std::size_t i = 0; i < 6; ++i) {
+            const std::size_t end =
+                    fen.find(' ', start);
+
+            if (i < 5) {
+                if (end == std::string_view::npos) {
+                    return false;
+                }
+
+                fields[i] =
+                        fen.substr(start, end - start);
+
+                start = end + 1;
+            } else {
+                fields[i] =
+                        fen.substr(start);
+            }
         }
 
-        // Black pieces
-        set_piece(Color::Black, PieceType::Rook, Square::A8);
-        set_piece(Color::Black, PieceType::Knight, Square::B8);
-        set_piece(Color::Black, PieceType::Bishop, Square::C8);
-        set_piece(Color::Black, PieceType::Queen, Square::D8);
-        set_piece(Color::Black, PieceType::King, Square::E8);
-        set_piece(Color::Black, PieceType::Bishop, Square::F8);
-        set_piece(Color::Black, PieceType::Knight, Square::G8);
-        set_piece(Color::Black, PieceType::Rook, Square::H8);
+        // -----------------------------------------------------
+        // 1. Piece placement
+        // -----------------------------------------------------
 
-        for (std::size_t file = 0; file < to_index(File::Count); ++file) {
-            set_piece(
-                Color::Black,
-                PieceType::Pawn,
-                make_square(
-                    static_cast<File>(file),
-                    Rank::R7
-                )
+        std::size_t rank = 7;
+        std::size_t file = 0;
+
+        for (const char c: fields[0]) {
+            if (c == '/') {
+                if (file != 8 || rank == 0) {
+                    return false;
+                }
+
+                --rank;
+                file = 0;
+
+                continue;
+            }
+
+            if (c >= '1' && c <= '8') {
+                file +=
+                        static_cast<std::size_t>(
+                            c - '0'
+                        );
+
+                if (file > 8) {
+                    return false;
+                }
+
+                continue;
+            }
+
+            if (file >= 8) {
+                return false;
+            }
+
+            Color color;
+            PieceType type;
+
+            switch (c) {
+                case 'P':
+                    color = Color::White;
+                    type = PieceType::Pawn;
+                    break;
+
+                case 'N':
+                    color = Color::White;
+                    type = PieceType::Knight;
+                    break;
+
+                case 'B':
+                    color = Color::White;
+                    type = PieceType::Bishop;
+                    break;
+
+                case 'R':
+                    color = Color::White;
+                    type = PieceType::Rook;
+                    break;
+
+                case 'Q':
+                    color = Color::White;
+                    type = PieceType::Queen;
+                    break;
+
+                case 'K':
+                    color = Color::White;
+                    type = PieceType::King;
+                    break;
+
+                case 'p':
+                    color = Color::Black;
+                    type = PieceType::Pawn;
+                    break;
+
+                case 'n':
+                    color = Color::Black;
+                    type = PieceType::Knight;
+                    break;
+
+                case 'b':
+                    color = Color::Black;
+                    type = PieceType::Bishop;
+                    break;
+
+                case 'r':
+                    color = Color::Black;
+                    type = PieceType::Rook;
+                    break;
+
+                case 'q':
+                    color = Color::Black;
+                    type = PieceType::Queen;
+                    break;
+
+                case 'k':
+                    color = Color::Black;
+                    type = PieceType::King;
+                    break;
+
+                default:
+                    return false;
+            }
+
+            const Square sq =
+                    make_square(
+                        static_cast<File>(file),
+                        static_cast<Rank>(rank)
+                    );
+
+            parsed.set_piece(
+                color,
+                type,
+                sq
             );
+
+            ++file;
         }
 
-        set_castling_rights(
-            CastlingRights::WhiteKingSide
-            | CastlingRights::WhiteQueenSide
-            | CastlingRights::BlackKingSide
-            | CastlingRights::BlackQueenSide
-        );
+        if (rank != 0 || file != 8) {
+            return false;
+        }
 
-        clear_en_passant_square();
+        // -----------------------------------------------------
+        // 2. Side to move
+        // -----------------------------------------------------
+
+        if (fields[1] == "w") {
+            parsed.side_to_move_ = Color::White;
+        } else if (fields[1] == "b") {
+            parsed.side_to_move_ = Color::Black;
+        } else {
+            return false;
+        }
+
+        // -----------------------------------------------------
+        // 3. Castling rights
+        // -----------------------------------------------------
+
+        parsed.castling_rights_ =
+                CastlingRights::None;
+
+        if (fields[2] != "-") {
+            for (const char c: fields[2]) {
+                switch (c) {
+                    case 'K':
+                        parsed.castling_rights_ =
+                                parsed.castling_rights_
+                                | CastlingRights::WhiteKingSide;
+                        break;
+
+                    case 'Q':
+                        parsed.castling_rights_ =
+                                parsed.castling_rights_
+                                | CastlingRights::WhiteQueenSide;
+                        break;
+
+                    case 'k':
+                        parsed.castling_rights_ =
+                                parsed.castling_rights_
+                                | CastlingRights::BlackKingSide;
+                        break;
+
+                    case 'q':
+                        parsed.castling_rights_ =
+                                parsed.castling_rights_
+                                | CastlingRights::BlackQueenSide;
+                        break;
+
+                    default:
+                        return false;
+                }
+            }
+        }
+
+        // -----------------------------------------------------
+        // 4. En passant target
+        // -----------------------------------------------------
+
+        if (fields[3] == "-") {
+            parsed.en_passant_square_ =
+                    Square::None;
+        } else {
+            if (fields[3].size() != 2) {
+                return false;
+            }
+
+            const char file_char =
+                    fields[3][0];
+
+            const char rank_char =
+                    fields[3][1];
+
+            if (file_char < 'a'
+                || file_char > 'h') {
+                return false;
+            }
+
+            if (rank_char < '1'
+                || rank_char > '8') {
+                return false;
+            }
+
+            const File ep_file =
+                    static_cast<File>(
+                        file_char - 'a'
+                    );
+
+            const Rank ep_rank =
+                    static_cast<Rank>(
+                        rank_char - '1'
+                    );
+
+            parsed.en_passant_square_ =
+                    make_square(
+                        ep_file,
+                        ep_rank
+                    );
+        }
+
+        // -----------------------------------------------------
+        // 5. Halfmove clock
+        // -----------------------------------------------------
+
+        {
+            const char *begin =
+                    fields[4].data();
+
+            const char *end =
+                    begin + fields[4].size();
+
+            const auto result =
+                    std::from_chars(
+                        begin,
+                        end,
+                        parsed.halfmove_clock_
+                    );
+
+            if (result.ec != std::errc{}
+                || result.ptr != end) {
+                return false;
+            }
+        }
+
+        // -----------------------------------------------------
+        // 6. Fullmove number
+        // -----------------------------------------------------
+
+        {
+            const char *begin =
+                    fields[5].data();
+
+            const char *end =
+                    begin + fields[5].size();
+
+            const auto result =
+                    std::from_chars(
+                        begin,
+                        end,
+                        parsed.fullmove_number_
+                    );
+
+            if (result.ec != std::errc{}
+                || result.ptr != end) {
+                return false;
+            }
+        }
+
+        if (parsed.fullmove_number_ == 0) {
+            return false;
+        }
+
+        *this = parsed;
+
+        return true;
+    }
+
+    Color Position::side_to_move() const noexcept {
+        return side_to_move_;
+    }
+
+    std::uint16_t Position::halfmove_clock() const noexcept {
+        return halfmove_clock_;
+    }
+
+    std::uint16_t Position::fullmove_number() const noexcept {
+        return fullmove_number_;
     }
 }

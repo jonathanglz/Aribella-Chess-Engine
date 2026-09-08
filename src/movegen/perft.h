@@ -5,7 +5,7 @@
 
 namespace Aribella {
     [[nodiscard]]
-    std::uint64_t perft(Position &position, Color side, int depth);
+    std::uint64_t perft(Position &position, int depth);
 
-    void pertf_divide(Position &position, Color side, int depth);
+    void pertf_divide(Position &position, int depth);
 }
