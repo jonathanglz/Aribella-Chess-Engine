@@ -10,8 +10,6 @@ add_executable(Aribella main.cpp
         src/core/constants.h
         src/engine/engine.h
         src/movegen/move.h
-        src/position/fen.cpp
-        src/position/fen.h
         src/position/position.cpp
         src/position/position.h
         src/position/zobrist.h
