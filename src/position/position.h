@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include "../core/types.h"
 #include "../core/bitboard.h"
 #include "../movegen/move.h"
 #include "undo.h"
@@ -55,9 +54,12 @@ namespace Aribella {
         Piece remove_piece_at(Square sq) noexcept;
 
         [[nodiscard]]
-        UndoState make_move(Position& position, const Move& move) noexcept;
+        UndoState make_move(const Move& move) noexcept;
 
-        void unmake_move(Position& position, const Move& move, const UndoState& undo) noexcept;
+        void unmake_move(const Move& move, const UndoState& undo) noexcept;
+
+        [[nodiscard]]
+        constexpr bool operator==(const Position &other) const noexcept = default;
 
     private:
         std::array<std::array<Bitboard, to_index(PieceType::Count)>, to_index(Color::Count)> pieces_{};
