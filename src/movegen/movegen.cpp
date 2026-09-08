@@ -430,4 +430,28 @@ namespace Aribella {
 
         return is_square_attacked(position, king_square, ~side);
     }
+
+    MoveList generate_legal_moves(Position &position, Color side) noexcept {
+        assert(is_valid(side));
+
+        const MoveList pseudo_legal = generate_pseudo_legal_moves(position, side);
+
+        MoveList legal_moves;
+
+        for (std::size_t i = 0; i < pseudo_legal.size(); ++i) {
+            const Move move = pseudo_legal[i];
+
+            const UndoState undo = position.make_move(move);
+
+            const bool legal = !in_check(position, side);
+
+            position.unmake_move(move, undo);
+
+            if (legal) {
+                legal_moves.push_back(move);
+            }
+        }
+
+        return legal_moves;
+    }
 }

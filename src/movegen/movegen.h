@@ -43,4 +43,7 @@ namespace Aribella {
 
     [[nodiscard]]
     bool in_check(const Position& position, Color side) noexcept;
+
+    [[nodiscard]]
+    MoveList generate_legal_moves(Position& position, Color side) noexcept;
 }
