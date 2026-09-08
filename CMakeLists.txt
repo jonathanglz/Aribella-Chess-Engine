@@ -26,4 +26,6 @@ add_executable(Aribella main.cpp
         src/movegen/move_list.h
         src/movegen/attacks.cpp
         src/position/undo.h
+        src/movegen/perft.h
+        src/movegen/perft.cpp
 )

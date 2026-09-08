@@ -61,6 +61,8 @@ namespace Aribella {
         [[nodiscard]]
         constexpr bool operator==(const Position &other) const noexcept = default;
 
+        void set_start_position() noexcept;
+
     private:
         std::array<std::array<Bitboard, to_index(PieceType::Count)>, to_index(Color::Count)> pieces_{};
 

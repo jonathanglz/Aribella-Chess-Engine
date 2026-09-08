@@ -48,6 +48,10 @@ namespace Aribella {
                 bb = Bitboard{0};
             }
         }
+
+        castling_rights_ = CastlingRights::None;
+
+        en_passant_square_ = Square::None;
     }
 
     Piece Position::piece_at(Square sq) const noexcept {
@@ -421,5 +425,60 @@ namespace Aribella {
         } else {
             set_en_passant_square(undo.en_passant_square);
         }
+    }
+
+    void Position::set_start_position() noexcept {
+        clear();
+
+        // White pieces
+        set_piece(Color::White, PieceType::Rook, Square::A1);
+        set_piece(Color::White, PieceType::Knight, Square::B1);
+        set_piece(Color::White, PieceType::Bishop, Square::C1);
+        set_piece(Color::White, PieceType::Queen, Square::D1);
+        set_piece(Color::White, PieceType::King, Square::E1);
+        set_piece(Color::White, PieceType::Bishop, Square::F1);
+        set_piece(Color::White, PieceType::Knight, Square::G1);
+        set_piece(Color::White, PieceType::Rook, Square::H1);
+
+        for (std::size_t file = 0; file < to_index(File::Count); ++file) {
+            set_piece(
+                Color::White,
+                PieceType::Pawn,
+                make_square(
+                    static_cast<File>(file),
+                    Rank::R2
+                )
+            );
+        }
+
+        // Black pieces
+        set_piece(Color::Black, PieceType::Rook, Square::A8);
+        set_piece(Color::Black, PieceType::Knight, Square::B8);
+        set_piece(Color::Black, PieceType::Bishop, Square::C8);
+        set_piece(Color::Black, PieceType::Queen, Square::D8);
+        set_piece(Color::Black, PieceType::King, Square::E8);
+        set_piece(Color::Black, PieceType::Bishop, Square::F8);
+        set_piece(Color::Black, PieceType::Knight, Square::G8);
+        set_piece(Color::Black, PieceType::Rook, Square::H8);
+
+        for (std::size_t file = 0; file < to_index(File::Count); ++file) {
+            set_piece(
+                Color::Black,
+                PieceType::Pawn,
+                make_square(
+                    static_cast<File>(file),
+                    Rank::R7
+                )
+            );
+        }
+
+        set_castling_rights(
+            CastlingRights::WhiteKingSide
+            | CastlingRights::WhiteQueenSide
+            | CastlingRights::BlackKingSide
+            | CastlingRights::BlackQueenSide
+        );
+
+        clear_en_passant_square();
     }
 }
