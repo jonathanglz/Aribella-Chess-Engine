@@ -1,33 +1,13 @@
 #include "attacks.h"
+#include "../core/constants.h"
+#include "../core/random.h"
 #include <cassert>
 #include <cstdint>
 
 namespace Aribella {
     namespace {
-        class Xorshift64Star {
-        private:
-            std::uint64_t state;
-
-        public:
-            explicit Xorshift64Star(std::uint64_t seed) noexcept : state{seed} { assert(seed != 0); }
-
-            [[nodiscard]]
-            std::uint64_t next() noexcept {
-                std::uint64_t value = state;
-
-                value ^= value >> 12;
-                value ^= value << 25;
-                value ^= value >> 27;
-
-                state = value;
-
-                // Sebastian Vignas 0x2545F4914F6CDD1DULL hexadecimal number
-                return value * 0x2545F4914F6CDD1DULL;
-            }
-        };
-
         // Golden ratio 0x9E3779B97F4A7C15ULL hexadecimal number
-        Xorshift64Star RandomGenerator{0x9E3779B97F4A7C15ULL};
+        Xorshift64Star RandomGenerator{MagicSeed};
 
         [[nodiscard]]
         Bitboard random_bitboard() noexcept {

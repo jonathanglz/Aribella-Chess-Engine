@@ -6,6 +6,7 @@
 #include "../core/bitboard.h"
 #include "../movegen/move.h"
 #include "undo.h"
+#include "zobrist.h"
 
 namespace Aribella {
 
@@ -77,6 +78,11 @@ namespace Aribella {
         [[nodiscard]]
         std::uint16_t fullmove_number() const noexcept;
 
+        [[nodiscard]]
+        Zobrist::Key key() const noexcept;
+
+        void recompute_key() noexcept;
+
     private:
         std::array<std::array<Bitboard, to_index(PieceType::Count)>, to_index(Color::Count)> pieces_{};
 
@@ -87,7 +93,10 @@ namespace Aribella {
         Color side_to_move_{Color::White};
 
         std::uint16_t halfmove_clock_{0};
+
         std::uint16_t fullmove_number_{0};
+
+        Zobrist::Key key_{};
     };
 
 }

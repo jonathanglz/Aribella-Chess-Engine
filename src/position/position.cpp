@@ -453,7 +453,7 @@ namespace Aribella {
     }
 
     void Position::set_start_position() noexcept {
-        const bool ok = set_from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+        const bool ok = set_from_fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
         assert(ok);
     }
 
@@ -756,6 +756,7 @@ namespace Aribella {
             return false;
         }
 
+        parsed.recompute_key();
         *this = parsed;
 
         return true;
@@ -771,5 +772,42 @@ namespace Aribella {
 
     std::uint16_t Position::fullmove_number() const noexcept {
         return fullmove_number_;
+    }
+
+    Zobrist::Key Position::key() const noexcept {
+        return key_;
+    }
+
+    void Position::recompute_key() noexcept {
+        Zobrist::Key key{0};
+
+        for (std::size_t color = 0; color < to_index(Color::Count); ++color) {
+
+            for (std::size_t type = 0; type < to_index(PieceType::Count); ++type) {
+
+                Bitboard bb = pieces_[color][type];
+
+                while (bb) {
+
+                    const Square sq = pop_lsb(bb);
+
+                    const Piece piece = make_piece(static_cast<Color>(color), static_cast<PieceType>(type));
+
+                    key ^= Zobrist::ZobristTables.piece_square[to_index(piece)][to_index(sq)];
+                }
+            }
+        }
+
+        if (side_to_move_ == Color::Black) {
+            key ^= Zobrist::ZobristTables.side_to_move;
+        }
+
+        key ^= Zobrist::ZobristTables.castling[static_cast<std::size_t>(castling_rights_)];
+
+        if (en_passant_square_ != Square::None) {
+            key ^= Zobrist::ZobristTables.en_passant_file[to_index(file_of(en_passant_square_))];
+        }
+
+        key_ = key;
     }
 }

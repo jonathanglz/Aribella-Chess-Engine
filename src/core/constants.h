@@ -45,4 +45,7 @@ namespace Aribella {
         std::size_t{1} << MaxBishopRelevantBits
     };
 
+    inline constexpr std::uint64_t MagicSeed{0x9E3779B97F4A7C15ULL};
+
+    inline constexpr std::uint64_t ZobristSeed{0x123456789ABCDEFULL};
 }

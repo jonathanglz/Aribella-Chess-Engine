@@ -16,14 +16,11 @@ add_executable(Aribella main.cpp
         src/movegen/movegen.cpp
         src/movegen/movegen.h
         src/movegen/attacks.h
-        tests/bitboard_tests.cpp
-        tests/types_tests.cpp
-        tests/attacks_tests.cpp
-        tests/magic_tests.cpp
         src/movegen/magic_constants.h
         src/movegen/move_list.h
         src/movegen/attacks.cpp
         src/position/undo.h
         src/movegen/perft.h
         src/movegen/perft.cpp
+        src/core/random.h
 )
