@@ -1,5 +1,6 @@
 #pragma once
 
+#include "zobrist.h"
 #include "../core/types.h"
 
 namespace Aribella {
@@ -16,5 +17,7 @@ namespace Aribella {
         std::uint16_t fullmove_number{};
 
         Color side_to_move{Color::White};
+
+        Zobrist::Key key{};
     };
 }
