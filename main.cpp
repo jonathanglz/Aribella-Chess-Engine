@@ -13,20 +13,24 @@ int main() {
     Position position;
 
     assert(position.set_from_fen(
-        "4k3/8/8/8/8/8/8/4K1N1 "
+        "4k3/8/8/8/8/8/4P3/4K3 "
         "w - - 0 1"
     ));
 
-    print_bitboard(position.occupancy());
-
     const Move move{
-        .from = Square::G1,
-        .to = Square::F3,
-        .flag = MoveFlag::Quiet
+        .from = Square::E2,
+        .to = Square::E4,
+        .flag = MoveFlag::DoublePawnPush,
+        .promotion = PieceType::None
     };
 
     const UndoState undo =
         position.make_move(move);
+
+    assert(
+        position.en_passant_square()
+        == Square::E3
+    );
 
     const auto incremental_key =
         position.key();
@@ -38,7 +42,10 @@ int main() {
         == incremental_key
     );
 
-    position.unmake_move(move, undo);
+    position.unmake_move(
+        move,
+        undo
+    );
 
     assert(
         position.key()

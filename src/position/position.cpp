@@ -160,7 +160,27 @@ namespace Aribella {
 
         const bool incremental_capture = move.flag == MoveFlag::Capture;
 
-        const bool incremental_zobrist = incremental_quiet || incremental_capture;
+        const bool incremental_zobrist =
+                move.flag == MoveFlag::Quiet
+                || move.flag == MoveFlag::Capture
+                || move.flag == MoveFlag::DoublePawnPush;
+
+        // ---------------------------------------------------------
+        // Zobrist: remove old castling state
+        // ---------------------------------------------------------
+
+        if (incremental_zobrist) {
+            key_ ^= Zobrist::ZobristTables.castling[static_cast<std::size_t>(castling_rights_)];
+        }
+
+        // ---------------------------------------------------------
+        // Zobrist: remove old en passant state
+        // ---------------------------------------------------------
+
+        if (incremental_zobrist && en_passant_square_ != Square::None) {
+            key_ ^= Zobrist::ZobristTables.en_passant_file[to_index(file_of(en_passant_square_))];
+        }
+
 
         // ---------------------------------------------------------
         // Zobrist: remove moving piece from source
@@ -219,9 +239,9 @@ namespace Aribella {
 
         remove_piece(side, moving_type, move.from);
 
-        // ---------------------------------
-        // Promotion
-        // ---------------------------------
+        // ---------------------------------------------------------
+        // Place piece on destination square
+        // ---------------------------------------------------------
 
         if (is_promotion(move)) {
             assert(moving_type == PieceType::Pawn);
@@ -378,6 +398,22 @@ namespace Aribella {
                 default:
                     break;
             }
+        }
+
+        // ---------------------------------------------------------
+        // Zobrist: add NEW castling state
+        // ---------------------------------------------------------
+
+        if (incremental_zobrist) {
+            key_ ^= Zobrist::ZobristTables.castling[static_cast<std::size_t>(castling_rights_)];
+        }
+
+        // ---------------------------------------------------------
+        // Zobrist: add NEW en passant state
+        // ---------------------------------------------------------
+
+        if (incremental_zobrist && en_passant_square_ != Square::None) {
+            key_ ^= Zobrist::ZobristTables.en_passant_file[to_index(file_of(en_passant_square_))];
         }
 
         // ---------------------------------------------------------
