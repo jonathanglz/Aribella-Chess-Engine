@@ -8,7 +8,6 @@ add_executable(Aribella main.cpp
         src/core/bitboard.h
         src/core/types.h
         src/core/constants.h
-        src/engine/engine.h
         src/movegen/move.h
         src/position/position.cpp
         src/position/position.h
@@ -23,4 +22,8 @@ add_executable(Aribella main.cpp
         src/movegen/perft.h
         src/movegen/perft.cpp
         src/core/random.h
+        src/engine/game_state.h
+        src/engine/game_state.cpp
+        src/search/transposition_table.h
+        src/search/transposition_table.cpp
 )

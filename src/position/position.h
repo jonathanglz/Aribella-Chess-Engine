@@ -70,16 +70,25 @@ namespace Aribella {
         bool set_from_fen(std::string_view fen) noexcept;
 
         [[nodiscard]]
-        Color side_to_move() const noexcept;
+        constexpr Color side_to_move() const noexcept {
+            return side_to_move_;
+        }
 
         [[nodiscard]]
-        std::uint16_t halfmove_clock() const noexcept;
+        constexpr std::uint16_t halfmove_clock() const noexcept {
+            return halfmove_clock_;
+        }
 
         [[nodiscard]]
-        std::uint16_t fullmove_number() const noexcept;
+        constexpr std::uint16_t fullmove_number() const noexcept {
+            return fullmove_number_;
+        }
 
         [[nodiscard]]
-        Zobrist::Key key() const noexcept;
+        constexpr Zobrist::Key key() const noexcept {
+            return key_;
+        }
+
 
         void recompute_key() noexcept;
 

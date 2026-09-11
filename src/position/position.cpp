@@ -865,22 +865,6 @@ namespace Aribella {
         return true;
     }
 
-    Color Position::side_to_move() const noexcept {
-        return side_to_move_;
-    }
-
-    std::uint16_t Position::halfmove_clock() const noexcept {
-        return halfmove_clock_;
-    }
-
-    std::uint16_t Position::fullmove_number() const noexcept {
-        return fullmove_number_;
-    }
-
-    Zobrist::Key Position::key() const noexcept {
-        return key_;
-    }
-
     void Position::recompute_key() noexcept {
         Zobrist::Key key{0};
 
