@@ -20,6 +20,7 @@ namespace Aribella {
         int score{};
         Move best_move{};
         TTFlag flag{TTFlag::Exact};
+        bool valid{false};
     };
 
     class TranspositionTable {

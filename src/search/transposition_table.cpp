@@ -14,13 +14,49 @@ namespace Aribella {
     void TranspositionTable::store(Zobrist::Key key, int depth, int score, TTFlag flag, const Move &best_move) {
         const auto index = static_cast<std::size_t>(key % entries_.size());
 
-        entries_[index] = TTEntry{
-            .key = key,
-            .depth = depth,
-            .score = score,
-            .best_move = best_move,
-            .flag = flag
-        };
+        TTEntry &entry = entries_[index];
+
+        // Empty slot: store
+        if (!entry.valid) {
+            entries_[index] = TTEntry{
+                .key = key,
+                .depth = depth,
+                .score = score,
+                .best_move = best_move,
+                .flag = flag,
+                .valid = true
+            };
+
+            return;
+        }
+
+        // Same Zobrist key: replace if new depth >= old depth
+        if (entry.key == key) {
+            if (depth >= entry.depth) {
+                entries_[index] = TTEntry{
+                    .key = key,
+                    .depth = depth,
+                    .score = score,
+                    .best_move = best_move,
+                    .flag = flag,
+                    .valid = true
+                };
+            }
+            return;
+        }
+
+        // Different key collision: replace only if new depth > old depth
+        if (depth > entry.depth) {
+            entries_[index] = TTEntry{
+                .key = key,
+                .depth = depth,
+                .score = score,
+                .best_move = best_move,
+                .flag = flag,
+                .valid = true
+            };
+        }
+        
     }
 
 
@@ -28,6 +64,10 @@ namespace Aribella {
         const auto index = static_cast<std::size_t>(key % entries_.size());
 
         const TTEntry &entry = entries_[index];
+
+        if (!entry.valid) {
+            return nullptr;
+        }
 
         if (entry.key != key) {
             return nullptr;

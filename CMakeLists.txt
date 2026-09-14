@@ -26,4 +26,8 @@ add_executable(Aribella main.cpp
         src/engine/game_state.cpp
         src/search/transposition_table.h
         src/search/transposition_table.cpp
+        src/evaluation/evaluation.h
+        src/evaluation/evaluation.cpp
+        src/search/search.h
+        src/search/search.cpp
 )
