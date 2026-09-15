@@ -18,7 +18,7 @@ namespace Aribella {
 
         // Empty slot: store
         if (!entry.valid) {
-            entries_[index] = TTEntry{
+            entry = TTEntry{
                 .key = key,
                 .depth = depth,
                 .score = score,
@@ -33,7 +33,7 @@ namespace Aribella {
         // Same Zobrist key: replace if new depth >= old depth
         if (entry.key == key) {
             if (depth >= entry.depth) {
-                entries_[index] = TTEntry{
+                entry = TTEntry{
                     .key = key,
                     .depth = depth,
                     .score = score,
@@ -47,7 +47,7 @@ namespace Aribella {
 
         // Different key collision: replace only if new depth > old depth
         if (depth > entry.depth) {
-            entries_[index] = TTEntry{
+            entry = TTEntry{
                 .key = key,
                 .depth = depth,
                 .score = score,
