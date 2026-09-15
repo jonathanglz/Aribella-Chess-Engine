@@ -5,6 +5,11 @@
 namespace Aribella {
     inline constexpr int MateScore = 100000;
 
+    struct SearchResult {
+        Move best_move{};
+        int score{};
+    };
+
     [[nodiscard]]
-    int negamax(GameState &game, int depth);
+    SearchResult search(GameState& game, int depth);
 }

@@ -103,9 +103,75 @@ namespace Aribella {
         }
     }
 
-    int negamax(GameState &game, int depth) {
+    
+    SearchResult search(GameState &game, int depth) {
         assert(depth >= 0);
 
-        return negamax_impl(game, depth, 0, -Infinity, Infinity);
+        const Position &position = game.position();
+
+        if (game.is_threefold_repetition()) {
+            return SearchResult{
+                .best_move = Move{},
+                .score = 0
+            };
+        }
+
+        if (position.halfmove_clock() >= 100) {
+            return SearchResult{
+                .best_move = Move{},
+                .score = 0
+            };
+        }
+
+        Position search_position = position;
+
+        const MoveList moves = generate_legal_moves(search_position, position.side_to_move());
+
+        // No legal moves
+        if (moves.empty()) {
+            if (in_check(search_position, position.side_to_move())) {
+                return SearchResult{
+                    .best_move = Move{},
+                    .score = -MateScore
+                };
+            }
+
+            return SearchResult{
+                .best_move = Move{},
+                .score = 0
+            };
+        }
+
+        Move best_move{};
+
+        int best_score = -Infinity;
+
+        int alpha = -Infinity;
+
+        constexpr int beta = Infinity;
+
+        for (std::size_t i = 0; i < moves.size(); ++i) {
+            const Move move = moves[i];
+
+            const UndoState undo = game.make_move(move);
+
+            const int score = -negamax_impl(game, depth - 1, 1, -beta, -alpha);
+
+            game.unmake_move(move, undo);
+
+            if (score > best_score) {
+                best_score = score;
+                best_move = move;
+            }
+
+            if (score > alpha) {
+                alpha = score;
+            }
+        }
+
+        return SearchResult{
+            .best_move = best_move,
+            .score = best_score
+        };
     }
 }
