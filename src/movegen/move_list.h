@@ -31,6 +31,11 @@ namespace Aribella {
         }
 
         [[nodiscard]]
+        constexpr Move& operator[](std::size_t index) noexcept {
+            return moves_[index];
+        }
+
+        [[nodiscard]]
         constexpr const Move& operator[](const std::size_t index) const noexcept {
             assert(index < size_);
 

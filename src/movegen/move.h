@@ -19,19 +19,23 @@ namespace Aribella {
         Square to{Square::None};
         MoveFlag flag{MoveFlag::Quiet};
         PieceType promotion{PieceType::None};
+
+        [[nodiscard]]
+        bool operator==(const Move &) const noexcept = default;
     };
 
     [[nodiscard]]
     constexpr bool is_captured(const Move &move) noexcept {
-        return move.flag == MoveFlag::Capture
-               || move.flag == MoveFlag::PromotionCapture
-               || move.flag == MoveFlag::EnPassant;
+        return
+                move.flag == MoveFlag::Capture ||
+                move.flag == MoveFlag::PromotionCapture ||
+                move.flag == MoveFlag::EnPassant;
     }
 
     [[nodiscard]]
     constexpr bool is_promotion(const Move &move) noexcept {
-        return move.flag == MoveFlag::Promotion
-               || move.flag == MoveFlag::PromotionCapture;
+        return
+                move.flag == MoveFlag::Promotion ||
+                move.flag == MoveFlag::PromotionCapture;
     }
-
 }

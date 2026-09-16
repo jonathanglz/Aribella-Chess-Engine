@@ -14,7 +14,8 @@ namespace Aribella {
     }
 
     UndoState GameState::make_move(const Move &move) {
-        const UndoState undo = position_.make_move(move);
+        const UndoState undo =
+                position_.make_move(move);
 
         position_history_.push_back(position_.key());
 
@@ -38,18 +39,22 @@ namespace Aribella {
         }
 
         // key to compare older history against
-        const Zobrist::Key current_key = position_.key();
+        const Zobrist::Key current_key =
+                position_.key();
 
         // last entry as current index
-        const std::size_t current_index = position_history_.size() - 1;
+        const std::size_t current_index =
+                position_history_.size() - 1;
 
         // get relevant plies for repetition searching
-        const std::size_t reversible_plies = position_.halfmove_clock();
+        const std::size_t reversible_plies =
+                position_.halfmove_clock();
 
         // determines how far back we need to search
-        const std::size_t earliest_index = reversible_plies > current_index
-                                               ? 0
-                                               : current_index - reversible_plies;
+        const std::size_t earliest_index =
+                reversible_plies > current_index
+                    ? 0
+                    : current_index - reversible_plies;
 
 
         // count current position as occurrence

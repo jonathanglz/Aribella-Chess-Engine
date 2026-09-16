@@ -7,14 +7,22 @@ namespace Aribella {
 
 
     void TranspositionTable::clear() {
-        std::fill(entries_.begin(), entries_.end(), TTEntry{});
+        std::fill(entries_.begin(),
+                  entries_.end(),
+                  TTEntry{});
     }
 
 
-    void TranspositionTable::store(Zobrist::Key key, int depth, int score, TTFlag flag, const Move &best_move) {
-        const auto index = static_cast<std::size_t>(key % entries_.size());
+    void TranspositionTable::store(Zobrist::Key key,
+                                   int depth,
+                                   int score,
+                                   TTFlag flag,
+                                   const Move &best_move) {
+        const auto index =
+                static_cast<std::size_t>(key % entries_.size());
 
-        TTEntry &entry = entries_[index];
+        TTEntry &entry =
+                entries_[index];
 
         // Empty slot: store
         if (!entry.valid) {
@@ -56,14 +64,15 @@ namespace Aribella {
                 .valid = true
             };
         }
-        
     }
 
 
     const TTEntry *TranspositionTable::probe(Zobrist::Key key) const noexcept {
-        const auto index = static_cast<std::size_t>(key % entries_.size());
+        const auto index =
+                static_cast<std::size_t>(key % entries_.size());
 
-        const TTEntry &entry = entries_[index];
+        const TTEntry &entry =
+                entries_[index];
 
         if (!entry.valid) {
             return nullptr;

@@ -25,7 +25,9 @@ namespace Aribella {
     }
 
     Bitboard Position::occupancy() const noexcept {
-        return occupancy(Color::White) | occupancy(Color::Black);
+        return
+                occupancy(Color::White) |
+                occupancy(Color::Black);
     }
 
     void Position::set_piece(Color color, PieceType type, Square sq) noexcept {
@@ -33,7 +35,8 @@ namespace Aribella {
         assert(is_valid(type));
         assert(is_valid(sq));
 
-        set_bit(pieces_[to_index(color)][to_index(type)], sq);
+        set_bit(pieces_[to_index(color)][to_index(type)],
+                sq);
     }
 
     void Position::remove_piece(Color color, PieceType type, Square sq) noexcept {
@@ -41,7 +44,8 @@ namespace Aribella {
         assert(is_valid(type));
         assert(is_valid(sq));
 
-        clear_bit(pieces_[to_index(color)][to_index(type)], sq);
+        clear_bit(pieces_[to_index(color)][to_index(type)],
+                  sq);
     }
 
     void Position::clear() noexcept {
@@ -51,9 +55,11 @@ namespace Aribella {
             }
         }
 
-        castling_rights_ = CastlingRights::None;
+        castling_rights_ =
+                CastlingRights::None;
 
-        en_passant_square_ = Square::None;
+        en_passant_square_ =
+                Square::None;
     }
 
     Piece Position::piece_at(Square sq) const noexcept {
@@ -66,13 +72,16 @@ namespace Aribella {
                 }
             }
         }
-        return Piece::None;
+        return
+                Piece::None;
     }
 
     bool Position::is_occupied(Square sq) const noexcept {
         assert(is_valid(sq));
 
-        return is_set(occupancy(), sq);
+        return
+                is_set(occupancy(),
+                       sq);
     }
 
     Color Position::color_at(Square sq) const noexcept {
@@ -80,69 +89,86 @@ namespace Aribella {
         assert(is_occupied(sq));
 
         if (is_set(occupancy(Color::White), sq)) {
-            return Color::White;
+            return
+                    Color::White;
         }
 
-        return Color::Black;
+        return
+                Color::Black;
     }
 
     Square Position::en_passant_square() const noexcept {
-        return en_passant_square_;
+        return
+                en_passant_square_;
     }
 
     void Position::set_en_passant_square(Square sq) noexcept {
         assert(is_valid(sq));
 
-        en_passant_square_ = sq;
+        en_passant_square_ =
+                sq;
     }
 
     void Position::clear_en_passant_square() noexcept {
-        en_passant_square_ = Square::None;
+        en_passant_square_ =
+                Square::None;
     }
 
     CastlingRights Position::castling_rights() const noexcept {
-        return castling_rights_;
+        return
+                castling_rights_;
     }
 
     bool Position::can_castle(CastlingRights right) const noexcept {
-        return has_castling_rights(castling_rights_, right);
+        return
+                has_castling_rights(castling_rights_,
+                                    right);
     }
 
     void Position::set_castling_rights(CastlingRights right) noexcept {
-        castling_rights_ = right;
+        castling_rights_ =
+                right;
     }
 
     void Position::remove_castling_right(CastlingRights right) noexcept {
-        castling_rights_ = static_cast<CastlingRights>(
-            static_cast<u8>(castling_rights_) & ~static_cast<u8>(right)
-        );
+        castling_rights_ =
+                static_cast<CastlingRights>(static_cast<u8>(castling_rights_) &
+                                            ~static_cast<u8>(right)
+                );
     }
 
     Piece Position::remove_piece_at(Square sq) noexcept {
         assert(is_valid(sq));
 
-        const Piece piece = piece_at(sq);
+        const Piece piece =
+                piece_at(sq);
 
         if (piece == Piece::None) {
             return Piece::None;
         }
 
-        remove_piece(color_of(piece), type_of(piece), sq);
+        remove_piece(color_of(piece),
+                     type_of(piece),
+                     sq);
 
-        return piece;
+        return
+                piece;
     }
 
     UndoState Position::make_move(const Move &move) noexcept {
         assert(is_valid(move.from));
         assert(is_valid(move.to));
 
-        const Piece moving_piece = piece_at(move.from);
+        const Piece moving_piece =
+                piece_at(move.from);
 
         assert(moving_piece != Piece::None);
 
-        const Color side = color_of(moving_piece);
+        const Color side =
+                color_of(moving_piece);
 
-        const PieceType moving_type = type_of(moving_piece);
+        const PieceType moving_type =
+                type_of(moving_piece);
 
         // Remember the old state before this move might destroy or overwrite
 
@@ -160,21 +186,24 @@ namespace Aribella {
         // Zobrist: remove old castling state
         // ---------------------------------------------------------
 
-        key_ ^= Zobrist::ZobristTables.castling[static_cast<std::size_t>(castling_rights_)];
+        key_ ^=
+                Zobrist::ZobristTables.castling[static_cast<std::size_t>(castling_rights_)];
 
         // ---------------------------------------------------------
         // Zobrist: remove old en passant state
         // ---------------------------------------------------------
 
         if (en_passant_square_ != Square::None) {
-            key_ ^= Zobrist::ZobristTables.en_passant_file[to_index(file_of(en_passant_square_))];
+            key_ ^=
+                    Zobrist::ZobristTables.en_passant_file[to_index(file_of(en_passant_square_))];
         }
 
         // --------------------------------------------------------
         // Zobrist: remove moving piece from source square
         // ---------------------------------------------------------
 
-        key_ ^= Zobrist::ZobristTables.piece_square[to_index(moving_piece)][to_index(move.from)];
+        key_ ^=
+                Zobrist::ZobristTables.piece_square[to_index(moving_piece)][to_index(move.from)];
 
         // ---------------------------------------------------------
         // Old en passant square expires
@@ -187,14 +216,17 @@ namespace Aribella {
         // ---------------------------------------------------------
 
         if (move.flag == MoveFlag::Capture || move.flag == MoveFlag::PromotionCapture) {
-            const Piece captured_piece = piece_at(move.to);
+            const Piece captured_piece =
+                    piece_at(move.to);
 
             assert(captured_piece != Piece::None);
 
             // XOR to remove captured piece
-            key_ ^= Zobrist::ZobristTables.piece_square[to_index(captured_piece)][to_index(move.to)];
+            key_ ^=
+                    Zobrist::ZobristTables.piece_square[to_index(captured_piece)][to_index(move.to)];
 
-            undo.captured_piece = remove_piece_at(move.to);
+            undo.captured_piece =
+                    remove_piece_at(move.to);
 
             assert(undo.captured_piece != Piece::None);
         }
@@ -206,19 +238,23 @@ namespace Aribella {
         if (move.flag == MoveFlag::EnPassant) {
             assert(moving_type == PieceType::Pawn);
 
-            const Square captured_square = (side == Color::White)
-                                               ? static_cast<Square>(to_index(move.to) - 8)
-                                               : static_cast<Square>(to_index(move.to) + 8);
+            const Square captured_square =
+                    side == Color::White
+                        ? static_cast<Square>(to_index(move.to) - 8)
+                        : static_cast<Square>(to_index(move.to) + 8);
 
-            const Piece captured_piece = piece_at(captured_square);
+            const Piece captured_piece =
+                    piece_at(captured_square);
 
             assert(captured_piece != Piece::None);
 
             assert(type_of(captured_piece) == PieceType::Pawn);
 
-            key_ ^= Zobrist::ZobristTables.piece_square[to_index(captured_piece)][to_index(captured_square)];
+            key_ ^=
+                    Zobrist::ZobristTables.piece_square[to_index(captured_piece)][to_index(captured_square)];
 
-            undo.captured_piece = remove_piece_at(captured_square);
+            undo.captured_piece =
+                    remove_piece_at(captured_square);
 
             assert(undo.captured_piece != Piece::None);
         }
@@ -227,7 +263,9 @@ namespace Aribella {
         // Remove moving piece from starting square
         // ---------------------------------------------------------
 
-        remove_piece(side, moving_type, move.from);
+        remove_piece(side,
+                     moving_type,
+                     move.from);
 
         // ---------------------------------------------------------
         // Place piece on destination square
@@ -237,25 +275,33 @@ namespace Aribella {
             assert(moving_type == PieceType::Pawn);
 
             assert(
-                move.promotion == PieceType::Queen
-                || move.promotion == PieceType::Rook
-                || move.promotion == PieceType::Bishop
-                || move.promotion == PieceType::Knight
+                move.promotion == PieceType::Queen ||
+                move.promotion == PieceType::Rook ||
+                move.promotion == PieceType::Bishop ||
+                move.promotion == PieceType::Knight
             );
 
-            const Piece promoted_piece = make_piece(side, move.promotion);
+            const Piece promoted_piece =
+                    make_piece(side,
+                               move.promotion);
 
             // promotion move
-            set_piece(side, move.promotion, move.to);
+            set_piece(side,
+                      move.promotion,
+                      move.to);
 
             // Zobrist: add promoted piece on destination.
-            key_ ^= Zobrist::ZobristTables.piece_square[to_index(promoted_piece)][to_index(move.to)];
+            key_ ^=
+                    Zobrist::ZobristTables.piece_square[to_index(promoted_piece)][to_index(move.to)];
         } else {
             // normal move, capture, double push, en passant, castling king move
-            set_piece(side, moving_type, move.to);
+            set_piece(side,
+                      moving_type,
+                      move.to);
 
             // Zobrist: add normal moving piece on destination.
-            key_ ^= Zobrist::ZobristTables.piece_square[to_index(moving_piece)][to_index(move.to)];
+            key_ ^=
+                    Zobrist::ZobristTables.piece_square[to_index(moving_piece)][to_index(move.to)];
         }
 
         // ---------------------------------------------------------
@@ -266,9 +312,10 @@ namespace Aribella {
             assert(moving_type == PieceType::Pawn);
 
             // create new en passant square
-            const Square ep = (side == Color::White)
-                                  ? static_cast<Square>(to_index(move.from) + 8)
-                                  : static_cast<Square>(to_index(move.from) - 8);
+            const Square ep =
+                    side == Color::White
+                        ? static_cast<Square>(to_index(move.from) + 8)
+                        : static_cast<Square>(to_index(move.from) - 8);
 
             set_en_passant_square(ep);
         }
@@ -281,21 +328,33 @@ namespace Aribella {
             assert(moving_type == PieceType::King);
 
             if (side == Color::White) {
-                key_ ^= Zobrist::ZobristTables.piece_square[to_index(Piece::WhiteRook)][to_index(Square::H1)];
+                key_ ^=
+                        Zobrist::ZobristTables.piece_square[to_index(Piece::WhiteRook)][to_index(Square::H1)];
 
-                key_ ^= Zobrist::ZobristTables.piece_square[to_index(Piece::WhiteRook)][to_index(Square::F1)];
+                key_ ^=
+                        Zobrist::ZobristTables.piece_square[to_index(Piece::WhiteRook)][to_index(Square::F1)];
 
-                remove_piece(Color::White, PieceType::Rook, Square::H1);
+                remove_piece(Color::White,
+                             PieceType::Rook,
+                             Square::H1);
 
-                set_piece(Color::White, PieceType::Rook, Square::F1);
+                set_piece(Color::White,
+                          PieceType::Rook,
+                          Square::F1);
             } else {
-                key_ ^= Zobrist::ZobristTables.piece_square[to_index(Piece::BlackRook)][to_index(Square::H8)];
+                key_ ^=
+                        Zobrist::ZobristTables.piece_square[to_index(Piece::BlackRook)][to_index(Square::H8)];
 
-                key_ ^= Zobrist::ZobristTables.piece_square[to_index(Piece::BlackRook)][to_index(Square::F8)];
+                key_ ^=
+                        Zobrist::ZobristTables.piece_square[to_index(Piece::BlackRook)][to_index(Square::F8)];
 
-                remove_piece(Color::Black, PieceType::Rook, Square::H8);
+                remove_piece(Color::Black,
+                             PieceType::Rook,
+                             Square::H8);
 
-                set_piece(Color::Black, PieceType::Rook, Square::F8);
+                set_piece(Color::Black,
+                          PieceType::Rook,
+                          Square::F8);
             }
         }
 
@@ -307,21 +366,33 @@ namespace Aribella {
             assert(moving_type == PieceType::King);
 
             if (side == Color::White) {
-                key_ ^= Zobrist::ZobristTables.piece_square[to_index(Piece::WhiteRook)][to_index(Square::A1)];
+                key_ ^=
+                        Zobrist::ZobristTables.piece_square[to_index(Piece::WhiteRook)][to_index(Square::A1)];
 
-                key_ ^= Zobrist::ZobristTables.piece_square[to_index(Piece::WhiteRook)][to_index(Square::D1)];
+                key_ ^=
+                        Zobrist::ZobristTables.piece_square[to_index(Piece::WhiteRook)][to_index(Square::D1)];
 
-                remove_piece(Color::White, PieceType::Rook, Square::A1);
+                remove_piece(Color::White,
+                             PieceType::Rook,
+                             Square::A1);
 
-                set_piece(Color::White, PieceType::Rook, Square::D1);
+                set_piece(Color::White,
+                          PieceType::Rook,
+                          Square::D1);
             } else {
-                key_ ^= Zobrist::ZobristTables.piece_square[to_index(Piece::BlackRook)][to_index(Square::A8)];
+                key_ ^=
+                        Zobrist::ZobristTables.piece_square[to_index(Piece::BlackRook)][to_index(Square::A8)];
 
-                key_ ^= Zobrist::ZobristTables.piece_square[to_index(Piece::BlackRook)][to_index(Square::D8)];
+                key_ ^=
+                        Zobrist::ZobristTables.piece_square[to_index(Piece::BlackRook)][to_index(Square::D8)];
 
-                remove_piece(Color::Black, PieceType::Rook, Square::A8);
+                remove_piece(Color::Black,
+                             PieceType::Rook,
+                             Square::A8);
 
-                set_piece(Color::Black, PieceType::Rook, Square::D8);
+                set_piece(Color::Black,
+                          PieceType::Rook,
+                          Square::D8);
             }
         }
 
@@ -349,27 +420,19 @@ namespace Aribella {
         if (moving_type == PieceType::Rook) {
             switch (move.from) {
                 case Square::H1:
-                    remove_castling_right(
-                        CastlingRights::WhiteKingSide
-                    );
+                    remove_castling_right(CastlingRights::WhiteKingSide);
                     break;
 
                 case Square::A1:
-                    remove_castling_right(
-                        CastlingRights::WhiteQueenSide
-                    );
+                    remove_castling_right(CastlingRights::WhiteQueenSide);
                     break;
 
                 case Square::H8:
-                    remove_castling_right(
-                        CastlingRights::BlackKingSide
-                    );
+                    remove_castling_right(CastlingRights::BlackKingSide);
                     break;
 
                 case Square::A8:
-                    remove_castling_right(
-                        CastlingRights::BlackQueenSide
-                    );
+                    remove_castling_right(CastlingRights::BlackQueenSide);
                     break;
 
                 default:
@@ -382,30 +445,23 @@ namespace Aribella {
         // that side's corresponding castling right.
         // ---------------------------------------------------------
 
-        if (undo.captured_piece != Piece::None && type_of(undo.captured_piece) == PieceType::Rook) {
+        if (undo.captured_piece != Piece::None &&
+            type_of(undo.captured_piece) == PieceType::Rook) {
             switch (move.to) {
                 case Square::H1:
-                    remove_castling_right(
-                        CastlingRights::WhiteKingSide
-                    );
+                    remove_castling_right(CastlingRights::WhiteKingSide);
                     break;
 
                 case Square::A1:
-                    remove_castling_right(
-                        CastlingRights::WhiteQueenSide
-                    );
+                    remove_castling_right(CastlingRights::WhiteQueenSide);
                     break;
 
                 case Square::H8:
-                    remove_castling_right(
-                        CastlingRights::BlackKingSide
-                    );
+                    remove_castling_right(CastlingRights::BlackKingSide);
                     break;
 
                 case Square::A8:
-                    remove_castling_right(
-                        CastlingRights::BlackQueenSide
-                    );
+                    remove_castling_right(CastlingRights::BlackQueenSide);
                     break;
 
                 default:
@@ -417,7 +473,8 @@ namespace Aribella {
         // Zobrist: add NEW castling state
         // ---------------------------------------------------------
 
-        key_ ^= Zobrist::ZobristTables.castling[static_cast<std::size_t>(castling_rights_)];
+        key_ ^=
+                Zobrist::ZobristTables.castling[static_cast<std::size_t>(castling_rights_)];
 
 
         // ---------------------------------------------------------
@@ -425,7 +482,8 @@ namespace Aribella {
         // ---------------------------------------------------------
 
         if (en_passant_square_ != Square::None) {
-            key_ ^= Zobrist::ZobristTables.en_passant_file[to_index(file_of(en_passant_square_))];
+            key_ ^=
+                    Zobrist::ZobristTables.en_passant_file[to_index(file_of(en_passant_square_))];
         }
 
 
@@ -433,7 +491,8 @@ namespace Aribella {
         // Update halfmove clock
         // ---------------------------------------------------------
 
-        if (moving_type == PieceType::Pawn || undo.captured_piece != Piece::None) {
+        if (moving_type == PieceType::Pawn ||
+            undo.captured_piece != Piece::None) {
             halfmove_clock_ = 0;
         } else {
             ++halfmove_clock_;
@@ -452,13 +511,15 @@ namespace Aribella {
         // Switch side to move
         // ---------------------------------------------------------
 
-        side_to_move_ = ~side;
+        side_to_move_ =
+                ~side;
 
         // ---------------------------------------------------------
         // Zobrist: toggle side to move
         // ---------------------------------------------------------
 
-        key_ ^= Zobrist::ZobristTables.side_to_move;
+        key_ ^=
+                Zobrist::ZobristTables.side_to_move;
 
         return undo;
     }
@@ -467,25 +528,36 @@ namespace Aribella {
         assert(is_valid(move.from));
         assert(is_valid(move.to));
 
-        const Piece current_piece = piece_at(move.to);
+        const Piece current_piece =
+                piece_at(move.to);
 
         assert(current_piece != Piece::None);
 
-        const Color side = color_of(current_piece);
+        const Color side =
+                color_of(current_piece);
 
         // ---------------------------------------------------------
         // Move the main piece back
         // ---------------------------------------------------------
         if (is_promotion(move)) {
-            remove_piece(side, move.promotion, move.to);
+            remove_piece(side,
+                         move.promotion,
+                         move.to);
 
-            set_piece(side, PieceType::Pawn, move.from);
+            set_piece(side,
+                      PieceType::Pawn,
+                      move.from);
         } else {
-            const PieceType type = type_of(current_piece);
+            const PieceType type =
+                    type_of(current_piece);
 
-            remove_piece(side, type, move.to);
+            remove_piece(side,
+                         type,
+                         move.to);
 
-            set_piece(side, type, move.from);
+            set_piece(side,
+                      type,
+                      move.from);
         }
 
         // ---------------------------------------------------------
@@ -493,13 +565,21 @@ namespace Aribella {
         // ---------------------------------------------------------
         if (move.flag == MoveFlag::KingCastle) {
             if (side == Color::White) {
-                remove_piece(Color::White, PieceType::Rook, Square::F1);
+                remove_piece(Color::White,
+                             PieceType::Rook,
+                             Square::F1);
 
-                set_piece(Color::White, PieceType::Rook, Square::H1);
+                set_piece(Color::White,
+                          PieceType::Rook,
+                          Square::H1);
             } else {
-                remove_piece(Color::Black, PieceType::Rook, Square::F8);
+                remove_piece(Color::Black,
+                             PieceType::Rook,
+                             Square::F8);
 
-                set_piece(Color::Black, PieceType::Rook, Square::H8);
+                set_piece(Color::Black,
+                          PieceType::Rook,
+                          Square::H8);
             }
         }
 
@@ -508,23 +588,34 @@ namespace Aribella {
         // ---------------------------------------------------------
         if (move.flag == MoveFlag::QueenCastle) {
             if (side == Color::White) {
-                remove_piece(Color::White, PieceType::Rook, Square::D1);
+                remove_piece(Color::White,
+                             PieceType::Rook,
+                             Square::D1);
 
-                set_piece(Color::White, PieceType::Rook, Square::A1);
+                set_piece(Color::White,
+                          PieceType::Rook,
+                          Square::A1);
             } else {
-                remove_piece(Color::Black, PieceType::Rook, Square::D8);
+                remove_piece(Color::Black,
+                             PieceType::Rook,
+                             Square::D8);
 
-                set_piece(Color::Black, PieceType::Rook, Square::A8);
+                set_piece(Color::Black,
+                          PieceType::Rook,
+                          Square::A8);
             }
         }
 
         // ---------------------------------------------------------
         // Restore normal captured piece
         // ---------------------------------------------------------
-        if (move.flag == MoveFlag::Capture || move.flag == MoveFlag::PromotionCapture) {
+        if (move.flag == MoveFlag::Capture ||
+            move.flag == MoveFlag::PromotionCapture) {
             assert(undo.captured_piece != Piece::None);
 
-            set_piece(color_of(undo.captured_piece), type_of(undo.captured_piece), move.to);
+            set_piece(color_of(undo.captured_piece),
+                      type_of(undo.captured_piece),
+                      move.to);
         }
 
         // ---------------------------------------------------------
@@ -535,24 +626,32 @@ namespace Aribella {
 
             assert(type_of(undo.captured_piece) == PieceType::Pawn);
 
-            const Square captured_square = (side == Color::White)
-                                               ? static_cast<Square>(to_index(move.to) - 8)
-                                               : static_cast<Square>(to_index(move.to) + 8);
+            const Square captured_square =
+                    side == Color::White
+                        ? static_cast<Square>(to_index(move.to) - 8)
+                        : static_cast<Square>(to_index(move.to) + 8);
 
-            set_piece(color_of(undo.captured_piece), PieceType::Pawn, captured_square);
+            set_piece(color_of(undo.captured_piece),
+                      PieceType::Pawn, captured_square);
         }
 
-        castling_rights_ = undo.castling_rights;
+        castling_rights_ =
+                undo.castling_rights;
 
-        en_passant_square_ = undo.en_passant_square;
+        en_passant_square_ =
+                undo.en_passant_square;
 
-        halfmove_clock_ = undo.halfmove_clock;
+        halfmove_clock_ =
+                undo.halfmove_clock;
 
-        fullmove_number_ = undo.fullmove_number;
+        fullmove_number_ =
+                undo.fullmove_number;
 
-        side_to_move_ = undo.side_to_move;
+        side_to_move_ =
+                undo.side_to_move;
 
-        key_ = undo.key;
+        key_ =
+                undo.key;
     }
 
     void Position::set_start_position() noexcept {
@@ -870,26 +969,34 @@ namespace Aribella {
 
         for (std::size_t color = 0; color < to_index(Color::Count); ++color) {
             for (std::size_t type = 0; type < to_index(PieceType::Count); ++type) {
-                Bitboard bb = pieces_[color][type];
+                Bitboard bb =
+                        pieces_[color][type];
 
                 while (bb) {
-                    const Square sq = pop_lsb(bb);
+                    const Square sq =
+                            pop_lsb(bb);
 
-                    const Piece piece = make_piece(static_cast<Color>(color), static_cast<PieceType>(type));
+                    const Piece piece =
+                            make_piece(static_cast<Color>(color),
+                                       static_cast<PieceType>(type));
 
-                    key ^= Zobrist::ZobristTables.piece_square[to_index(piece)][to_index(sq)];
+                    key ^=
+                            Zobrist::ZobristTables.piece_square[to_index(piece)][to_index(sq)];
                 }
             }
         }
 
         if (side_to_move_ == Color::Black) {
-            key ^= Zobrist::ZobristTables.side_to_move;
+            key ^=
+                    Zobrist::ZobristTables.side_to_move;
         }
 
-        key ^= Zobrist::ZobristTables.castling[static_cast<std::size_t>(castling_rights_)];
+        key ^=
+                Zobrist::ZobristTables.castling[static_cast<std::size_t>(castling_rights_)];
 
         if (en_passant_square_ != Square::None) {
-            key ^= Zobrist::ZobristTables.en_passant_file[to_index(file_of(en_passant_square_))];
+            key ^=
+                    Zobrist::ZobristTables.en_passant_file[to_index(file_of(en_passant_square_))];
         }
 
         key_ = key;

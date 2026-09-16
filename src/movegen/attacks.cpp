@@ -11,19 +11,22 @@ namespace Aribella {
 
         [[nodiscard]]
         Bitboard random_bitboard() noexcept {
-            return RandomGenerator.next();
+            return
+                    RandomGenerator.next();
         }
 
         [[nodiscard]]
         Bitboard random_sparse_bitboard() noexcept {
-            return random_bitboard()
-                   & random_bitboard()
-                   & random_bitboard();
+            return
+                    random_bitboard()
+                    & random_bitboard()
+                    & random_bitboard();
         }
 
         template<std::size_t Capacity>
         [[nodiscard]]
-        Bitboard find_magic(Bitboard relevant_mask, const OccupancyAttackTable<Capacity> &reference_table,
+        Bitboard find_magic(Bitboard relevant_mask,
+                            const OccupancyAttackTable<Capacity> &reference_table,
                             std::uint8_t shift) {
             assert(reference_table.count <= Capacity);
             assert(shift < 64);
@@ -36,10 +39,12 @@ namespace Aribella {
 
             while (true) {
                 // random sparse 64-bit number that becomes candidate magic number
-                const Bitboard candidate = random_sparse_bitboard();
+                const Bitboard candidate =
+                        random_sparse_bitboard();
 
                 // Reject candidates that do no create enough variation in high bytes
-                if (popcount((relevant_mask * candidate) & 0xFF00000000000000ULL) < 6) {
+                if (popcount((relevant_mask * candidate) &
+                             0xFF00000000000000ULL) < 6) {
                     continue;
                 }
 
@@ -60,10 +65,13 @@ namespace Aribella {
                 // Test every occupancy/attack pair for selected square
                 for (std::size_t i = 0; i < reference_table.count; i++) {
                     // retrieve one known-correct pair(entry.occupancy, entry.attacks)
-                    const OccupancyAttackEntry &entry = reference_table.entries[i];
+                    const OccupancyAttackEntry &entry =
+                            reference_table.entries[i];
 
                     // calculate the magic index by calling magic_index helper
-                    const std::size_t index = magic_index(entry.occupancy, magic);
+                    const std::size_t index =
+                            magic_index(entry.occupancy,
+                                        magic);
 
                     if (index >= Capacity) {
                         valid = false;
@@ -93,49 +101,63 @@ namespace Aribella {
         assert(is_valid(sq));
 
         // find all blocker positions that can affect rook on sq
-        const Bitboard mask = generate_rook_relevant_mask(sq);
+        const Bitboard mask =
+                generate_rook_relevant_mask(sq);
 
         // generate all reference occupancies/attacks pair
-        const auto reference_table = generate_rook_occupancy_attack_table(sq);
+        const auto reference_table =
+                generate_rook_occupancy_attack_table(sq);
 
         // counts the number of squares in the relevant blocker mask
-        const auto relevant_bits = static_cast<std::uint8_t>(popcount(mask));
+        const auto relevant_bits =
+                static_cast<std::uint8_t>(popcount(mask));
 
         // calculate the shift
-        const auto shift = static_cast<std::uint8_t>(64 - relevant_bits);
+        const auto shift =
+                static_cast<std::uint8_t>(64 - relevant_bits);
 
         // search for the rook magic number
-        const Bitboard magic_number = find_magic(mask, reference_table, shift);
+        const Bitboard magic_number =
+                find_magic(mask, reference_table, shift);
 
-        return Magic{
-            .mask = mask,
-            .magic_number = magic_number,
-            .shift = shift
-        };
+        return
+                Magic{
+                    .mask = mask,
+                    .magic_number = magic_number,
+                    .shift = shift
+                };
     }
 
     Magic find_bishop_magic(Square sq) {
         assert(is_valid(sq));
 
         // find all blocker positions that can affect bishop on sq
-        const Bitboard mask = generate_bishop_relevant_mask(sq);
+        const Bitboard mask =
+                generate_bishop_relevant_mask(sq);
 
         // generate all reference occupancies/attacks pair
-        const auto reference_table = generate_bishop_occupancy_attack_table(sq);
+        const auto reference_table =
+                generate_bishop_occupancy_attack_table(sq);
 
         // counts the number of squares in the relevant blocker mask
-        const auto relevant_bits = static_cast<std::uint8_t>(popcount(mask));
+        const auto relevant_bits =
+                static_cast<std::uint8_t>(popcount(mask));
 
         // calculate the shift
-        const auto shift = static_cast<std::uint8_t>(64 - relevant_bits);
+        const auto shift =
+                static_cast<std::uint8_t>(64 - relevant_bits);
 
         // search for the bishop magic number
-        const Bitboard magic_number = find_magic(mask, reference_table, shift);
+        const Bitboard magic_number =
+                find_magic(mask,
+                           reference_table,
+                           shift);
 
-        return Magic{
-            .mask = mask,
-            .magic_number = magic_number,
-            .shift = shift
-        };
+        return
+                Magic{
+                    .mask = mask,
+                    .magic_number = magic_number,
+                    .shift = shift
+                };
     }
 }

@@ -6,12 +6,14 @@
 
 namespace Aribella {
     // See ChessProgramming Wiki - Pawn Attacks(Bitboards)
-    constexpr Bitboard pawn_attacks(Color c, Bitboard pawns) noexcept {
+    constexpr Bitboard pawn_attacks(Color c,
+                                    Bitboard pawns) noexcept {
         assert(is_valid(c));
 
-        return c == Color::White
-                   ? shift_northeast(pawns) | shift_northwest(pawns)
-                   : shift_southeast(pawns) | shift_southwest(pawns);
+        return
+                c == Color::White
+                    ? shift_northeast(pawns) | shift_northwest(pawns)
+                    : shift_southeast(pawns) | shift_southwest(pawns);
     }
 
     // Calculates one mask manually
@@ -37,8 +39,10 @@ namespace Aribella {
         std::array<Bitboard, to_index(Square::Count)> attacksTable{};
 
         for (std::size_t i = 0; i < attacksTable.size(); ++i) {
-            const auto sq = static_cast<Square>(i);
-            attacksTable[i] = generate_knight_attacks(sq);
+            const auto sq =
+                    static_cast<Square>(i);
+            attacksTable[i] =
+                    generate_knight_attacks(sq);
         }
 
         return attacksTable;
@@ -75,8 +79,10 @@ namespace Aribella {
         std::array<Bitboard, to_index(Square::Count)> attacksTable{};
 
         for (std::size_t i = 0; i < attacksTable.size(); ++i) {
-            const auto sq = static_cast<Square>(i);
-            attacksTable[i] = generate_king_attacks(sq);
+            const auto sq =
+                    static_cast<Square>(i);
+            attacksTable[i] =
+                    generate_king_attacks(sq);
         }
 
         return attacksTable;
@@ -96,10 +102,13 @@ namespace Aribella {
         assert(is_valid(sq));
 
         Bitboard attacks{0};
-        Bitboard current = square_bb(sq);
+        Bitboard current =
+                square_bb(sq);
 
         while (true) {
-            current = shift(current, direction);
+            current =
+                    shift(current,
+                          direction);
 
             if (current == 0) {
                 break;
@@ -144,7 +153,9 @@ namespace Aribella {
         Bitboard current = square_bb(sq);
 
         while (true) {
-            current = shift(current, direction);
+            current =
+                    shift(current,
+                          direction);
 
             if (current == 0) {
                 break;
@@ -181,10 +192,12 @@ namespace Aribella {
     constexpr Bitboard set_occupancy(std::size_t index, Bitboard attack_mask) noexcept {
         Bitboard occupancy{0};
 
-        const int bit_count = popcount(attack_mask);
+        const int bit_count =
+                popcount(attack_mask);
 
         for (std::size_t bit = 0; bit < bit_count; ++bit) {
-            const Square square = pop_lsb(attack_mask);
+            const Square square =
+                    pop_lsb(attack_mask);
 
             if (index & (std::size_t{1} << bit)) {
                 occupancy |= square_bb(square);
@@ -214,18 +227,24 @@ namespace Aribella {
 
         OccupancyAttackTable<MaxRookOccupancies> result{};
 
-        const Bitboard mask = generate_rook_relevant_mask(sq);
-        const int relevant_bits = popcount(mask);
+        const Bitboard mask =
+                generate_rook_relevant_mask(sq);
+        const int relevant_bits =
+                popcount(mask);
 
-        result.count = std::size_t{1} << relevant_bits;
+        result.count =
+                std::size_t{1} << relevant_bits;
 
         assert(result.count <= result.entries.size());
 
         for (std::size_t index = 0; index < result.count; ++index) {
-            const Bitboard occupancy = set_occupancy(index, mask);
+            const Bitboard occupancy =
+                    set_occupancy(index,
+                                  mask);
 
             result.entries[index] = {
-                .occupancy = occupancy, .attacks = generate_rook_attacks(sq, occupancy)
+                .occupancy = occupancy,
+                .attacks = generate_rook_attacks(sq, occupancy)
             };
         }
         return result;
@@ -238,18 +257,23 @@ namespace Aribella {
 
         OccupancyAttackTable<MaxBishopOccupancies> result{};
 
-        const Bitboard mask = generate_bishop_relevant_mask(sq);
-        const int relevant_bits = popcount(mask);
+        const Bitboard mask =
+                generate_bishop_relevant_mask(sq);
+        const int relevant_bits =
+                popcount(mask);
 
-        result.count = std::size_t{1} << relevant_bits;
+        result.count =
+                std::size_t{1} << relevant_bits;
 
         assert(result.count <= result.entries.size());
 
         for (std::size_t index = 0; index < result.count; ++index) {
-            const Bitboard occupancy = set_occupancy(index, mask);
+            const Bitboard occupancy =
+                    set_occupancy(index, mask);
 
             result.entries[index] = {
-                .occupancy = occupancy, .attacks = generate_bishop_attacks(sq, occupancy)
+                .occupancy = occupancy,
+                .attacks = generate_bishop_attacks(sq, occupancy)
             };
         }
         return result;
@@ -293,7 +317,8 @@ namespace Aribella {
     // Calculate one square's table size
     [[nodiscard]]
     constexpr std::size_t magic_table_size(Bitboard mask) noexcept {
-        const auto relevant_bits = static_cast<std::size_t>(popcount(mask));
+        const auto relevant_bits =
+                static_cast<std::size_t>(popcount(mask));
 
         return std::size_t{1} << relevant_bits;
     }
@@ -304,9 +329,11 @@ namespace Aribella {
         std::size_t total{0};
 
         for (std::size_t index = 0; index < to_index(Square::Count); ++index) {
-            const auto sq = static_cast<Square>(index);
+            const auto sq =
+                    static_cast<Square>(index);
 
-            const Bitboard mask = generate_rook_relevant_mask(sq);
+            const Bitboard mask =
+                    generate_rook_relevant_mask(sq);
 
             total += magic_table_size(mask);
         }
@@ -320,9 +347,11 @@ namespace Aribella {
         std::size_t total{0};
 
         for (std::size_t index = 0; index < to_index(Square::Count); ++index) {
-            const auto sq = static_cast<Square>(index);
+            const auto sq =
+                    static_cast<Square>(index);
 
-            const Bitboard mask = generate_bishop_relevant_mask(sq);
+            const Bitboard mask =
+                    generate_bishop_relevant_mask(sq);
 
             total += magic_table_size(mask);
         }
@@ -342,10 +371,13 @@ namespace Aribella {
         std::size_t current_offset{0};
 
         for (std::size_t index = 0; index < magics.size(); ++index) {
-            const auto sq = static_cast<Square>(index);
-            const Bitboard mask = generate_rook_relevant_mask(sq);
+            const auto sq =
+                    static_cast<Square>(index);
+            const Bitboard mask =
+                    generate_rook_relevant_mask(sq);
 
-            const auto relevant_bits = static_cast<std::uint8_t>(popcount(mask));
+            const auto relevant_bits =
+                    static_cast<std::uint8_t>(popcount(mask));
 
             magics[index] = {
                 .mask = mask,
@@ -366,10 +398,13 @@ namespace Aribella {
         std::size_t current_offset{0};
 
         for (std::size_t index = 0; index < magics.size(); ++index) {
-            const auto sq = static_cast<Square>(index);
-            const Bitboard mask = generate_bishop_relevant_mask(sq);
+            const auto sq =
+                    static_cast<Square>(index);
+            const Bitboard mask =
+                    generate_bishop_relevant_mask(sq);
 
-            const auto relevant_bits = static_cast<std::uint8_t>(popcount(mask));
+            const auto relevant_bits =
+                    static_cast<std::uint8_t>(popcount(mask));
 
             magics[index] = {
                 .mask = mask,
@@ -397,14 +432,18 @@ namespace Aribella {
         for (std::size_t square_index = 0; square_index < to_index(Square::Count); ++square_index) {
             const auto sq = static_cast<Square>(square_index);
 
-            const auto reference_table = generate_rook_occupancy_attack_table(sq);
+            const auto reference_table =
+                    generate_rook_occupancy_attack_table(sq);
 
-            const Magic &magic = RookMagics[square_index];
+            const Magic &magic =
+                    RookMagics[square_index];
 
             for (std::size_t entry_index = 0; entry_index < reference_table.count; ++entry_index) {
-                const auto &entry = reference_table.entries[entry_index];
+                const auto &entry =
+                        reference_table.entries[entry_index];
 
-                const std::size_t index = magic_index(entry.occupancy, magic);
+                const std::size_t index =
+                        magic_index(entry.occupancy, magic);
 
                 table[magic.offset + index] = entry.attacks;
             }
@@ -419,16 +458,21 @@ namespace Aribella {
         for (std::size_t square_index = 0; square_index < to_index(Square::Count); ++square_index) {
             const auto sq = static_cast<Square>(square_index);
 
-            const auto reference_table = generate_bishop_occupancy_attack_table(sq);
+            const auto reference_table =
+                    generate_bishop_occupancy_attack_table(sq);
 
-            const Magic &magic = BishopMagics[square_index];
+            const Magic &magic =
+                    BishopMagics[square_index];
 
             for (std::size_t entry_index = 0; entry_index < reference_table.count; ++entry_index) {
-                const auto &entry = reference_table.entries[entry_index];
+                const auto &entry =
+                        reference_table.entries[entry_index];
 
-                const std::size_t index = magic_index(entry.occupancy, magic);
+                const std::size_t index =
+                        magic_index(entry.occupancy, magic);
 
-                table[magic.offset + index] = entry.attacks;
+                table[magic.offset + index] =
+                        entry.attacks;
             }
         }
         return table;
@@ -442,32 +486,42 @@ namespace Aribella {
     inline Bitboard rook_attacks(Square sq, Bitboard occupancy) noexcept {
         assert(is_valid(sq));
 
-        const std::size_t square_index = to_index(sq);
+        const std::size_t square_index =
+                to_index(sq);
 
-        const Magic &magic = RookMagics[square_index];
+        const Magic &magic =
+                RookMagics[square_index];
 
-        const std::size_t index = magic_index(occupancy, magic);
+        const std::size_t index =
+                magic_index(occupancy, magic);
 
-        return RookAttackLookup[magic.offset + index];
+        return
+                RookAttackLookup[magic.offset + index];
     }
 
     [[nodiscard]]
     inline Bitboard bishop_attacks(Square sq, Bitboard occupancy) noexcept {
         assert(is_valid(sq));
 
-        const std::size_t square_index = to_index(sq);
+        const std::size_t square_index =
+                to_index(sq);
 
-        const Magic &magic = BishopMagics[square_index];
+        const Magic &magic =
+                BishopMagics[square_index];
 
-        const std::size_t index = magic_index(occupancy, magic);
+        const std::size_t index =
+                magic_index(occupancy, magic);
 
-        return BishopAttackLookup[magic.offset + index];
+        return
+                BishopAttackLookup[magic.offset + index];
     }
 
     [[nodiscard]]
     inline Bitboard queen_attacks(Square sq, Bitboard occupancy) noexcept {
         assert(is_valid(sq));
 
-        return rook_attacks(sq, occupancy) | bishop_attacks(sq, occupancy);
+        return
+                rook_attacks(sq, occupancy) |
+                bishop_attacks(sq, occupancy);
     }
 }

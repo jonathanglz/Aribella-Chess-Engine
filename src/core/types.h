@@ -253,6 +253,4 @@ namespace Aribella {
     constexpr bool has_castling_rights(CastlingRights rights, CastlingRights right) noexcept {
         return static_cast<u8>(rights & right) != 0;
     }
-
-    
 }

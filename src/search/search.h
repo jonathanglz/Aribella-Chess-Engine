@@ -23,4 +23,5 @@ namespace Aribella {
     SearchStats search_stats() noexcept;
 
     void reset_search_stats() noexcept;
+
 }

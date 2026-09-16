@@ -18,13 +18,17 @@ namespace Aribella {
         int score{0};
 
         for (std::size_t type_index = 0; type_index < to_index(PieceType::Count); ++type_index) {
-            const auto type = static_cast<PieceType>(type_index);
+            const auto type =
+                    static_cast<PieceType>(type_index);
 
-            const int value = PieceValues[type_index];
+            const int value =
+                    PieceValues[type_index];
 
-            const int white_count = popcount(position.pieces(Color::White, type));
+            const int white_count =
+                    popcount(position.pieces(Color::White, type));
 
-            const int black_count = popcount(position.pieces(Color::Black, type));
+            const int black_count =
+                    popcount(position.pieces(Color::Black, type));
 
             score += white_count * value;
 

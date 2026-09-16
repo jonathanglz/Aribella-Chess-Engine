@@ -10,10 +10,9 @@ namespace Aribella {
             std::cout << rank + 1 << "  ";
 
             for (int file = 0; file < 8; ++file) {
-                const auto sq = make_square(
-                    static_cast<File>(file),
-                    static_cast<Rank>(rank)
-                );
+                const auto sq =
+                        make_square(static_cast<File>(file),
+                                    static_cast<Rank>(rank));
 
                 std::cout << (is_set(bb, sq) ? 'X' : '.') << ' ';
             }
