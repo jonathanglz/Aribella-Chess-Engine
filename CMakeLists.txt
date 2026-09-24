@@ -30,4 +30,8 @@ add_executable(Aribella main.cpp
         src/evaluation/evaluation.cpp
         src/search/search.h
         src/search/search.cpp
+        src/movegen/move_format.h
+        src/movegen/move_format.cpp
+        src/uci/uci.h
+        src/uci/uci.cpp
 )

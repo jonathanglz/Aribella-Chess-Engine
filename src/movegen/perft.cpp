@@ -43,48 +43,49 @@ namespace Aribella {
     }
 
 
-    std::uint64_t perft(Position &position, int depth) {
+    std::uint64_t perft(GameState &game, int depth) {
         assert(depth >= 0);
 
+        // One leaf: current position
         if (depth == 0) {
             return 1;
         }
 
-        const Color side =
-                position.side_to_move();
+        const Position &position = game.position();
+
+        Position move_position = position;
 
         const MoveList moves =
-                generate_legal_moves(position, side);
+                generate_legal_moves(move_position, position.side_to_move());
+
+        if (depth == 1) {
+            return static_cast<std::uint64_t>(moves.size());
+        }
 
         std::uint64_t nodes{0};
 
         for (std::size_t i = 0; i < moves.size(); ++i) {
-            const Move move =
-                    moves[i];
+            const Move move = moves[i];
 
-            const Position before =
-                    position;
+            const UndoState undo = game.make_move(move);
 
-            const UndoState undo =
-                    position.make_move(move);
+            nodes += perft(game, depth - 1);
 
-            nodes += perft(position, depth - 1);
-
-            position.unmake_move(move, undo);
-
-            assert(position == before);
+            game.unmake_move(move, undo);
         }
 
         return nodes;
     }
 
-    void pertf_divide(Position &position, int depth) {
+    void pertf_divide(GameState &game, int depth) {
         assert(depth >= 1);
 
-        const Color side =
-                position.side_to_move();
+        const Position &position = game.position();
+
+        Position move_position = position;
+
         const MoveList moves =
-                generate_legal_moves(position, side);
+                generate_legal_moves(move_position, position.side_to_move());
 
         std::uint64_t total{0};
 
@@ -93,12 +94,12 @@ namespace Aribella {
                     moves[i];
 
             const UndoState undo =
-                    position.make_move(move);
+                    game.make_move(move);
 
             const std::uint64_t nodes =
-                    perft(position, depth - 1);
+                    perft(game, depth - 1);
 
-            position.unmake_move(move, undo);
+            game.unmake_move(move, undo);
 
             print_move(move);
 

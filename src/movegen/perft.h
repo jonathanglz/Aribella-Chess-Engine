@@ -1,11 +1,13 @@
 #pragma once
 
+#include "../engine/game_state.h"
+
 #include <cstdint>
-#include "../position/position.h"
+
 
 namespace Aribella {
     [[nodiscard]]
-    std::uint64_t perft(Position &position, int depth);
+    std::uint64_t perft(GameState &game, int depth);
 
-    void pertf_divide(Position &position, int depth);
+    void pertf_divide(GameState &game, int depth);
 }

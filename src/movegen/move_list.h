@@ -8,7 +8,6 @@
 #include "move.h"
 
 namespace Aribella {
-
     inline constexpr std::size_t MaxMoves{256};
 
     class MoveList {
@@ -23,7 +22,7 @@ namespace Aribella {
             return size_ == 0;
         }
 
-        constexpr void push_back(const Move& move) noexcept {
+        constexpr void push_back(const Move &move) noexcept {
             assert(size_ < moves_.size());
 
             moves_[size_] = move;
@@ -31,12 +30,14 @@ namespace Aribella {
         }
 
         [[nodiscard]]
-        constexpr Move& operator[](std::size_t index) noexcept {
+        constexpr Move &operator[](std::size_t index) noexcept {
+            assert(index < size_);
+
             return moves_[index];
         }
 
         [[nodiscard]]
-        constexpr const Move& operator[](const std::size_t index) const noexcept {
+        constexpr const Move &operator[](const std::size_t index) const noexcept {
             assert(index < size_);
 
             return moves_[index];
