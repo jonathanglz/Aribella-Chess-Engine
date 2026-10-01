@@ -68,6 +68,28 @@ namespace Aribella {
             -20, -10, -10, -5, -5, -10, -10, -20
         };
 
+        constexpr std::array<int, 64> KingMiddleGameTable{
+            20, 30, 10, 0, 0, 10, 30, 20,
+            20, 20, 0, 0, 0, 0, 20, 20,
+            -10, -20, -20, -20, -20, -20, -20, -10,
+            -20, -30, -30, -40, -40, -30, -30, -20,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30,
+            -30, -40, -40, -50, -50, -40, -40, -30
+        };
+
+        constexpr std::array<int, 64> KingEndGameTable{
+            -50, -40, -30, -20, -20, -30, -40, -50,
+            -30, -20, -10, 0, 0, -10, -20, -30,
+            -30, -10, 20, 30, 30, 20, -10, -30,
+            -30, -10, 30, 40, 40, 30, -10, -30,
+            -30, -10, 30, 40, 40, 30, -10, -30,
+            -30, -10, 20, 30, 30, 20, -10, -30,
+            -30, -30, 0, 0, 0, 0, -30, -30,
+            -50, -30, -30, -30, -30, -30, -30, -50
+        };
+
         [[nodiscard]]
         constexpr std::size_t pst_index(Square square, Color color) noexcept {
             const std::size_t index = static_cast<std::size_t>(square);
@@ -77,6 +99,35 @@ namespace Aribella {
             }
 
             return index ^ 56;
+        }
+
+        [[nodiscard]]
+        bool is_endgame(const Position &position) noexcept {
+            const int white_queens = popcount(position.pieces(Color::White, PieceType::Queen));
+
+            const int black_queens = popcount(position.pieces(Color::Black, PieceType::Queen));
+
+            if (white_queens == 0 && black_queens == 0) {
+                return true;
+            }
+
+            const auto queen_side_has_low_material =
+                    [&position](Color color) noexcept {
+                const int queens = popcount(position.pieces(color, PieceType::Queen));
+
+                if (queens == 0) {
+                    return true;
+                }
+
+                const int rooks = popcount(position.pieces(color, PieceType::Rook));
+
+                const int minors =
+                        popcount(position.pieces(color, PieceType::Bishop)) +
+                        popcount(position.pieces(color, PieceType::Knight));
+
+                return rooks == 0 && minors <= 1;
+            };
+            return queen_side_has_low_material(Color::White) && queen_side_has_low_material(Color::Black);
         }
     }
 
@@ -184,6 +235,29 @@ namespace Aribella {
             const Square square = static_cast<Square>(pop_lsb(black_queens));
 
             score -= QueenTable[pst_index(square, Color::Black)];
+        }
+
+
+        const bool endgame = is_endgame(position);
+
+        const auto &king_table = endgame
+                                     ? KingEndGameTable
+                                     : KingMiddleGameTable;
+
+        Bitboard white_kings = position.pieces(Color::White, PieceType::King);
+
+        while (white_kings) {
+            const Square square = static_cast<Square>(pop_lsb(white_kings));
+
+            score += king_table[pst_index(square, Color::White)];
+        }
+
+        Bitboard black_kings = position.pieces(Color::Black, PieceType::King);
+
+        while (black_kings) {
+            const Square square = static_cast<Square>(pop_lsb(black_kings));
+
+            score -= king_table[pst_index(square, Color::Black)];
         }
 
         

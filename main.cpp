@@ -17,12 +17,7 @@ using namespace Aribella;
 int main() {
     std::cout << "Aribella Chess Engine \nVersion 0.1\n";
 
-    // Aribella::run_uci();
-
-    Position position;
-    position.set_from_fen("4k3/8/2b5/8/8/8/8/4K3 w - - 0 1");
-
-    std::cout << evaluate(position) << std::endl;
+    Aribella::run_uci();
 
     return 0;
 }
