@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <utility>
+#include <array>
 
 #include "../evaluation/evaluation.h"
 #include "../movegen/movegen.h"
@@ -21,6 +22,10 @@ namespace Aribella {
         inline constexpr int MaxSearchPly = 128;
 
         inline constexpr int MateThreshold = MateScore - MaxSearchPly;
+
+        std::array<std::array<Move, MaxSearchPly>, MaxSearchPly> PvTable{};
+
+        std::array<int, MaxSearchPly> PvLength{};
 
         [[nodiscard]]
         constexpr int score_to_tt(int score, int ply) noexcept {
@@ -185,7 +190,18 @@ namespace Aribella {
         }
 
         [[nodiscard]]
-        int quiescence(GameState &game, int ply, int alpha, int beta, bool use_move_ordering) {
+        int quiescence(
+            GameState &game,
+            int ply,
+            int alpha,
+            int beta,
+            bool use_move_ordering,
+            SearchControl &control
+        ) {
+            if (control.should_stop()) {
+                return 0;
+            }
+
             ++QNodes;
             ++Nodes;
             assert(ply >= 0);
@@ -281,10 +297,15 @@ namespace Aribella {
                                     ply + 1,
                                     -beta,
                                     -alpha,
-                                    use_move_ordering
+                                    use_move_ordering,
+                                    control
                         );
 
                 game.unmake_move(move, undo);
+
+                if (control.should_stop()) {
+                    return 0;
+                }
 
                 if (score > best_score) {
                     best_score = score;
@@ -314,12 +335,20 @@ namespace Aribella {
             int ply,
             int alpha,
             int beta,
-            bool use_move_ordering
+            bool use_move_ordering,
+            SearchControl &control
         ) {
+            if (control.should_stop()) {
+                return 0;
+            }
+
             ++Nodes;
             assert(depth >= 0);
             assert(ply >= 0);
 
+            if (ply < MaxSearchPly) {
+                PvLength[ply] = 0;
+            }
 
             if (alpha >= beta) {
                 std::cerr
@@ -364,7 +393,8 @@ namespace Aribella {
                                   ply,
                                   alpha,
                                   beta,
-                                  use_move_ordering
+                                  use_move_ordering,
+                                  control
                 );
             }
 
@@ -450,7 +480,7 @@ namespace Aribella {
                              position.side_to_move())) {
                     return -MateScore + ply;
                 }
-
+                // stalemate is draw
                 return 0;
             }
 
@@ -479,8 +509,6 @@ namespace Aribella {
             // 3. Captures (MVV-LVA)
             // 4. Quiet moves
             // ---------------------------------------------------------
-
-            // order_moves(position, moves, tt_move);
 
             // ---------------------------------------------------------
             // Search variables
@@ -524,7 +552,9 @@ namespace Aribella {
                                       ply + 1,
                                       -beta,
                                       -alpha,
-                                      use_move_ordering);
+                                      use_move_ordering,
+                                      control
+                        );
 
 
                 // -----------------------------------------------------
@@ -534,6 +564,10 @@ namespace Aribella {
                 game.unmake_move(move, undo);
 
 
+                if (control.should_stop()) {
+                    return 0;
+                }
+
                 // -----------------------------------------------------
                 // New best move?
                 // -----------------------------------------------------
@@ -541,6 +575,23 @@ namespace Aribella {
                 if (score > best_score) {
                     best_score = score;
                     best_move = move;
+
+                    if (ply < MaxSearchPly) {
+                        PvTable[ply][0] = move;
+
+                        int length = 1;
+
+                        if (ply + 1 < MaxSearchPly) {
+                            const int child_length = PvLength[ply + 1];
+
+                            for (int j = 0; j < child_length && length < MaxSearchPly; ++j) {
+                                PvTable[ply][length] = PvTable[ply + 1][j];
+
+                                ++length;
+                            }
+                        }
+                        PvLength[ply] = length;
+                    }
                 }
 
 
@@ -619,11 +670,20 @@ namespace Aribella {
     // Root search
     // ---------------------------------------------------------
 
-    SearchResult search(GameState &game,
-                        TranspositionTable &tt,
-                        int depth,
-                        bool use_move_ordering) {
+    SearchResult search(
+        GameState &game,
+        TranspositionTable &tt,
+        int depth,
+        bool use_move_ordering,
+        SearchControl &control
+    ) {
+        if (control.should_stop()) {
+            return SearchResult{};
+        }
+
         assert(depth >= 1);
+
+        PvLength.fill(0);
 
         const Position &position =
                 game.position();
@@ -728,13 +788,16 @@ namespace Aribella {
             // -----------------------------------------------------
 
             const int score =
-                    -negamax_impl(game,
-                                  tt,
-                                  depth - 1,
-                                  1,
-                                  -beta,
-                                  -alpha,
-                                  use_move_ordering);
+                    -negamax_impl(
+                        game,
+                        tt,
+                        depth - 1,
+                        1,
+                        -beta,
+                        -alpha,
+                        use_move_ordering,
+                        control
+                    );
 
 
             // -----------------------------------------------------
@@ -743,6 +806,9 @@ namespace Aribella {
 
             game.unmake_move(move, undo);
 
+            if (control.should_stop()) {
+                return SearchResult{};
+            }
 
             // -----------------------------------------------------
             // New best root move?
@@ -752,6 +818,19 @@ namespace Aribella {
                 best_score = score;
 
                 best_move = move;
+
+                PvTable[0][0] = move;
+
+                int length = 1;
+
+                const int child_length = PvLength[1];
+
+                for (int j = 0; j < child_length && length < MaxSearchPly; ++j) {
+                    PvTable[0][length] = PvTable[1][j];
+
+                    ++length;
+                }
+                PvLength[0] = length;
             }
 
 
@@ -776,9 +855,18 @@ namespace Aribella {
                  best_move
         );
 
+        std::vector<Move> pv;
+
+        pv.reserve(static_cast<std::size_t>(PvLength[0]));
+
+        for (int i = 0; i < PvLength[0]; ++i) {
+            pv.push_back(PvTable[0][i]);
+        }
+
         return SearchResult{
             .best_move = best_move,
-            .score = best_score
+            .score = best_score,
+            .pv = std::move(pv)
         };
     }
 
@@ -799,7 +887,12 @@ namespace Aribella {
     }
 
     IterativeSearchResult iterative_deepening(
-        GameState &game, TranspositionTable &tt, int max_depth, bool use_move_ordering) {
+        GameState &game,
+        TranspositionTable &tt,
+        int max_depth,
+        bool use_move_ordering,
+        SearchControl &control
+    ) {
         assert(max_depth >= 1);
 
         IterativeSearchResult result{};
@@ -813,14 +906,24 @@ namespace Aribella {
         SearchStats previous_stats{};
 
         for (int depth = 1; depth <= max_depth; ++depth) {
+
+            if (control.should_stop()) {
+                break;
+            }
+
             // Reuse the same GameState and TT.
             const SearchResult current =
                     search(
                         game,
                         tt,
                         depth,
-                        use_move_ordering
+                        use_move_ordering,
+                        control
                     );
+
+            if (control.should_stop()) {
+                break;
+            }
 
             // search_stats() is cumulative because
             // search() does not reset the counters.
@@ -844,7 +947,8 @@ namespace Aribella {
                     depth,
                     current.best_move,
                     current.score,
-                    iteration_stats
+                    iteration_stats,
+                    current.pv
                 }
             );
 
@@ -858,167 +962,6 @@ namespace Aribella {
         return result;
     }
 
-
-    void test_iterative_deepening() {
-        using namespace Aribella;
-
-        constexpr int MaxDepth = 5;
-
-        constexpr std::string_view fen =
-                "4k3/8/8/3q4/8/2N5/8/4K3 "
-                "w - - 0 1";
-
-        // ==========================================
-        // DIRECT DEPTH-5 SEARCH
-        // ==========================================
-
-        GameState direct_game;
-
-        assert(direct_game.set_from_fen(fen));
-
-        TranspositionTable direct_tt{100'000};
-
-        reset_search_stats();
-
-        const SearchResult direct =
-                search(
-                    direct_game,
-                    direct_tt,
-                    MaxDepth,
-                    true
-                );
-
-        const SearchStats direct_stats =
-                search_stats();
-
-
-        // ==========================================
-        // ITERATIVE DEEPENING: DEPTHS 1 THROUGH 5
-        // ==========================================
-
-        GameState iterative_game;
-
-        assert(iterative_game.set_from_fen(fen));
-
-        TranspositionTable iterative_tt{100'000};
-
-        const IterativeSearchResult iterative =
-                iterative_deepening(
-                    iterative_game,
-                    iterative_tt,
-                    MaxDepth,
-                    true
-                );
-
-
-        // ==========================================
-        // RESULTS
-        // ==========================================
-
-        std::cout
-                << "\nDIRECT DEPTH-5 SEARCH\n"
-                << "Score: "
-                << direct.score << '\n'
-                << "Total nodes: "
-                << direct_stats.nodes << '\n'
-                << "Quiescence nodes: "
-                << direct_stats.qnodes << '\n'
-                << "TT hits: "
-                << direct_stats.tt_hits << '\n';
-
-        std::cout
-                << "\nITERATIVE DEEPENING\n"
-                << "Completed depth: "
-                << iterative.completed_depth << '\n'
-                << "Score: "
-                << iterative.result.score << '\n'
-                << "Total nodes (all iterations): "
-                << iterative.stats.nodes << '\n'
-                << "Quiescence nodes: "
-                << iterative.stats.qnodes << '\n'
-                << "TT hits: "
-                << iterative.stats.tt_hits << '\n';
-
-
-        // ==========================================
-        // CORRECTNESS
-        // ==========================================
-
-        assert(iterative.completed_depth == MaxDepth);
-
-        assert(
-            iterative.result.score ==
-            direct.score
-        );
-
-        std::cout
-                << "\nIterative deepening test PASSED\n";
-
-        assert(iterative.completed_depth == 5);
-        assert(iterative.iterations.size() == 5);
-
-        assert(iterative.result.score == direct.score);
-        assert(iterative.result.score == 320);
-
-        // Each entry must correspond to its search depth.
-        for (std::size_t i = 0;
-             i < iterative.iterations.size();
-             ++i) {
-            const IterationInfo &iteration =
-                    iterative.iterations[i];
-
-            assert(
-                iteration.depth ==
-                static_cast<int>(i) + 1
-            );
-
-            std::cout
-                    << "Depth " << iteration.depth
-                    << " | Score: " << iteration.score
-                    << " | Nodes: " << iteration.stats.nodes
-                    << " | QNodes: " << iteration.stats.qnodes
-                    << " | TT hits: " << iteration.stats.tt_hits
-                    << '\n';
-        }
-
-        // The last iteration must match the final result.
-        const IterationInfo &last =
-                iterative.iterations.back();
-
-        assert(last.depth == iterative.completed_depth);
-        assert(last.score == iterative.result.score);
-        assert(last.best_move == iterative.result.best_move);
-
-        // Per-iteration statistics must add up to
-        // the cumulative statistics.
-        SearchStats sum{};
-
-        for (const IterationInfo &iteration:
-             iterative.iterations) {
-            sum.nodes += iteration.stats.nodes;
-            sum.qnodes += iteration.stats.qnodes;
-            sum.tt_hits += iteration.stats.tt_hits;
-        }
-
-        assert(sum.nodes == iterative.stats.nodes);
-        assert(sum.qnodes == iterative.stats.qnodes);
-        assert(sum.tt_hits == iterative.stats.tt_hits);
-
-        std::cout
-                << "\nIteration history test PASSED\n";
-
-
-        for (const IterationInfo &iteration:
-             iterative.iterations) {
-            std::cout
-                    << "Depth " << iteration.depth
-                    << " | Best move: "
-                    << move_to_string(iteration.best_move)
-                    << " | Score: " << iteration.score
-                    << " | Nodes: " << iteration.stats.nodes
-                    << '\n';
-        }
-    }
 
     bool is_mate_score(int score) noexcept {
         return score >= MateThreshold ||

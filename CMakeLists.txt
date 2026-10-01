@@ -34,4 +34,6 @@ add_executable(Aribella main.cpp
         src/movegen/move_format.cpp
         src/uci/uci.h
         src/uci/uci.cpp
+        src/engine/engine.h
+        src/engine/engine.cpp
 )
