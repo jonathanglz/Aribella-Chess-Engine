@@ -102,35 +102,6 @@ namespace Aribella {
         }
 
         [[nodiscard]]
-        bool is_endgame(const Position &position) noexcept {
-            const int white_queens = popcount(position.pieces(Color::White, PieceType::Queen));
-
-            const int black_queens = popcount(position.pieces(Color::Black, PieceType::Queen));
-
-            if (white_queens == 0 && black_queens == 0) {
-                return true;
-            }
-
-            const auto queen_side_has_low_material =
-                    [&position](Color color) noexcept {
-                const int queens = popcount(position.pieces(color, PieceType::Queen));
-
-                if (queens == 0) {
-                    return true;
-                }
-
-                const int rooks = popcount(position.pieces(color, PieceType::Rook));
-
-                const int minors =
-                        popcount(position.pieces(color, PieceType::Bishop)) +
-                        popcount(position.pieces(color, PieceType::Knight));
-
-                return rooks == 0 && minors <= 1;
-            };
-            return queen_side_has_low_material(Color::White) && queen_side_has_low_material(Color::Black);
-        }
-
-        [[nodiscard]]
         int piece_square_score(const Position &position, PieceType type, const std::array<int, 64> &table) noexcept {
             int score{0};
 
@@ -154,6 +125,34 @@ namespace Aribella {
         }
     }
 
+    [[nodiscard]]
+    bool is_endgame(const Position &position) noexcept {
+        const int white_queens = popcount(position.pieces(Color::White, PieceType::Queen));
+
+        const int black_queens = popcount(position.pieces(Color::Black, PieceType::Queen));
+
+        if (white_queens == 0 && black_queens == 0) {
+            return true;
+        }
+
+        const auto queen_side_has_low_material =
+                [&position](Color color) noexcept {
+                    const int queens = popcount(position.pieces(color, PieceType::Queen));
+
+                    if (queens == 0) {
+                        return true;
+                    }
+
+                    const int rooks = popcount(position.pieces(color, PieceType::Rook));
+
+                    const int minors =
+                            popcount(position.pieces(color, PieceType::Bishop)) +
+                            popcount(position.pieces(color, PieceType::Knight));
+
+                    return rooks == 0 && minors <= 1;
+        };
+        return queen_side_has_low_material(Color::White) && queen_side_has_low_material(Color::Black);
+    }
 
     int evaluate(const Position &position) noexcept {
         int score{0};

@@ -43,6 +43,26 @@ namespace Aribella {
             return moves_[index];
         }
 
+        [[nodiscard]]
+        constexpr auto begin() noexcept {
+            return moves_.begin();
+        }
+
+        [[nodiscard]]
+        constexpr auto end() noexcept {
+            return moves_.end() + size_;
+        }
+
+        [[nodiscard]]
+        constexpr auto begin() const noexcept {
+            return moves_.begin();
+        }
+
+        [[nodiscard]]
+        constexpr auto end() const noexcept {
+            return moves_.end() + size_;
+        }
+
         constexpr void clear() noexcept {
             size_ = 0;
         }
