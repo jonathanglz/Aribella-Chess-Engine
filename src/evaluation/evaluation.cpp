@@ -129,7 +129,31 @@ namespace Aribella {
             };
             return queen_side_has_low_material(Color::White) && queen_side_has_low_material(Color::Black);
         }
+
+        [[nodiscard]]
+        int piece_square_score(const Position &position, PieceType type, const std::array<int, 64> &table) noexcept {
+            int score{0};
+
+            Bitboard white_pieces = position.pieces(Color::White, type);
+
+            while (white_pieces) {
+                const Square square = static_cast<Square>(pop_lsb(white_pieces));
+
+                score += table[pst_index(square, Color::White)];
+            }
+
+            Bitboard black_pieces = position.pieces(Color::Black, type);
+
+            while (black_pieces) {
+                const Square square = static_cast<Square>(pop_lsb(black_pieces));
+
+                score -= table[pst_index(square, Color::Black)];
+            }
+
+            return score;
+        }
     }
+
 
     int evaluate(const Position &position) noexcept {
         int score{0};
@@ -152,91 +176,15 @@ namespace Aribella {
             score -= black_count * value;
         }
 
+        score += piece_square_score(position, PieceType::Pawn, PawnTable);
 
-        Bitboard white_pawns = position.pieces(Color::White, PieceType::Pawn);
+        score += piece_square_score(position, PieceType::Knight, KnightTable);
 
-        while (white_pawns) {
-            const Square square = static_cast<Square>(pop_lsb(white_pawns));
+        score += piece_square_score(position, PieceType::Bishop, BishopTable);
 
-            score += PawnTable[pst_index(square, Color::White)];
-        }
+        score += piece_square_score(position, PieceType::Rook, RookTable);
 
-        Bitboard black_pawns = position.pieces(Color::Black, PieceType::Pawn);
-
-        while (black_pawns) {
-            const Square square = static_cast<Square>(pop_lsb(black_pawns));
-
-            score -= PawnTable[pst_index(square, Color::Black)];
-        }
-
-
-        Bitboard white_knights = position.pieces(Color::White, PieceType::Knight);
-
-        while (white_knights) {
-            const Square square = static_cast<Square>(pop_lsb(white_knights));
-
-            score += KnightTable[pst_index(square, Color::White)];
-        }
-
-        Bitboard black_knights = position.pieces(Color::Black, PieceType::Knight);
-
-        while (black_knights) {
-            const Square square = static_cast<Square>(pop_lsb(black_knights));
-
-            score -= KnightTable[pst_index(square, Color::Black)];
-        }
-
-
-        Bitboard white_bishops = position.pieces(Color::White, PieceType::Bishop);
-
-        while (white_bishops) {
-            const Square square = static_cast<Square>(pop_lsb(white_bishops));
-
-            score += BishopTable[pst_index(square, Color::White)];
-        }
-
-        Bitboard black_bishops = position.pieces(Color::Black, PieceType::Bishop);
-
-        while (black_bishops) {
-            const Square square = static_cast<Square>(pop_lsb(black_bishops));
-
-            score -= BishopTable[pst_index(square, Color::Black)];
-        }
-
-
-        Bitboard white_rooks = position.pieces(Color::White, PieceType::Rook);
-
-        while (white_rooks) {
-            const Square square = static_cast<Square>(pop_lsb(white_rooks));
-
-            score += RookTable[pst_index(square, Color::White)];
-        }
-
-        Bitboard black_rooks = position.pieces(Color::Black, PieceType::Rook);
-
-        while (black_rooks) {
-            const Square square = static_cast<Square>(pop_lsb(black_rooks));
-
-            score -= RookTable[pst_index(square, Color::Black)];
-        }
-
-
-        Bitboard white_queens = position.pieces(Color::White, PieceType::Queen);
-
-        while (white_queens) {
-            const Square square = static_cast<Square>(pop_lsb(white_queens));
-
-            score += QueenTable[pst_index(square, Color::White)];
-        }
-
-        Bitboard black_queens = position.pieces(Color::Black, PieceType::Queen);
-
-        while (black_queens) {
-            const Square square = static_cast<Square>(pop_lsb(black_queens));
-
-            score -= QueenTable[pst_index(square, Color::Black)];
-        }
-
+        score += piece_square_score(position, PieceType::Queen, QueenTable);
 
         const bool endgame = is_endgame(position);
 
@@ -244,23 +192,8 @@ namespace Aribella {
                                      ? KingEndGameTable
                                      : KingMiddleGameTable;
 
-        Bitboard white_kings = position.pieces(Color::White, PieceType::King);
+        score += piece_square_score(position, PieceType::King, king_table);
 
-        while (white_kings) {
-            const Square square = static_cast<Square>(pop_lsb(white_kings));
-
-            score += king_table[pst_index(square, Color::White)];
-        }
-
-        Bitboard black_kings = position.pieces(Color::Black, PieceType::King);
-
-        while (black_kings) {
-            const Square square = static_cast<Square>(pop_lsb(black_kings));
-
-            score -= king_table[pst_index(square, Color::Black)];
-        }
-
-        
         return score;
     }
 }

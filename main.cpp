@@ -15,7 +15,7 @@
 using namespace Aribella;
 
 int main() {
-    std::cout << "Aribella Chess Engine \nVersion 0.1\n";
+    std::cout << "Aribella Chess Engine v1.0\n";
 
     Aribella::run_uci();
 
