@@ -30,6 +30,18 @@ namespace {
 
     class CastlingTest : public ::testing::TestWithParam<CastlingTestCase> {
     };
+
+    class EndgamePerftTest : public ::testing::TestWithParam<std::pair<int, std::uint64_t> > {
+    };
+
+    class Position4PerftTest : public ::testing::TestWithParam<std::pair<int, std::uint64_t> > {
+    };
+
+    class Position5PerftTest : public ::testing::TestWithParam<std::pair<int, std::uint64_t> > {
+    };
+
+    class Position6PerftTest : public ::testing::TestWithParam<std::pair<int, std::uint64_t> > {
+    };
 }
 
 TEST_P(StartingPositionPerftTest, CorrectNodeCount) {
@@ -370,5 +382,77 @@ INSTANTIATE_TEST_SUITE_P(AllCastlingDirections, CastlingTest, ::testing::Values(
                              CastlingRights::BlackKingSide,
                              CastlingRights::BlackQueenSide
                              }
+                         )
+);
+
+TEST_P(EndgamePerftTest, CorrectNodeCount) {
+    const auto [depth, expected_nodes] = GetParam();
+
+    GameState game;
+
+    ASSERT_TRUE(game.set_from_fen("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1"));
+
+    EXPECT_EQ(perft(game, depth), expected_nodes);
+}
+
+INSTANTIATE_TEST_SUITE_P(ReferencePosition3, EndgamePerftTest, ::testing::Values(
+                             std::pair<int, std::uint64_t>{1, 14},
+                             std::pair<int, std::uint64_t>{2, 191},
+                             std::pair<int, std::uint64_t>{3, 2812},
+                             std::pair<int, std::uint64_t>{4, 43238}
+                         )
+);
+
+TEST_P(Position4PerftTest, CorrectNodeCount) {
+    const auto [depth, expected_nodes] = GetParam();
+
+    GameState game;
+
+    ASSERT_TRUE(game.set_from_fen("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1"));
+
+    EXPECT_EQ(perft(game, depth), expected_nodes);
+}
+
+INSTANTIATE_TEST_SUITE_P(ReferencePosition4, Position4PerftTest, ::testing::Values(
+                             std::pair<int, std::uint64_t>{1, 6},
+                             std::pair<int, std::uint64_t>{2, 264},
+                             std::pair<int, std::uint64_t>{3, 9467},
+                             std::pair<int, std::uint64_t>{4, 422333}
+                         )
+);
+
+TEST_P(Position5PerftTest, CorrectNodeCount) {
+    const auto [depth, expected_nodes] = GetParam();
+
+    GameState game;
+
+    ASSERT_TRUE(game.set_from_fen("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"));
+
+    EXPECT_EQ(perft(game, depth), expected_nodes);
+}
+
+INSTANTIATE_TEST_SUITE_P(ReferencePosition5, Position5PerftTest, ::testing::Values(
+                             std::pair<int, std::uint64_t>{1, 44},
+                             std::pair<int, std::uint64_t>{2, 1486},
+                             std::pair<int, std::uint64_t>{3, 62379},
+                             std::pair<int, std::uint64_t>{4, 2103487}
+                         )
+);
+
+TEST_P(Position6PerftTest, CorrectNodeCount) {
+    const auto [depth, expected_nodes] = GetParam();
+
+    GameState game;
+
+    ASSERT_TRUE(game.set_from_fen("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"));
+
+    EXPECT_EQ(perft(game, depth), expected_nodes);
+}
+
+INSTANTIATE_TEST_SUITE_P(ReferencePosition6, Position6PerftTest, ::testing::Values(
+                             std::pair<int, std::uint64_t>{1, 46},
+                             std::pair<int, std::uint64_t>{2, 2079},
+                             std::pair<int, std::uint64_t>{3, 89890},
+                             std::pair<int, std::uint64_t>{4, 3894594}
                          )
 );

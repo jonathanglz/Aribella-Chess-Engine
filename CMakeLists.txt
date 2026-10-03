@@ -79,6 +79,16 @@ enable_testing()
 add_executable(aribella_tests
         tests/evaluation/evaluation_tests.cpp
         tests/movegen/perft_tests.cpp
+        tests/core/bitboard_tests.cpp
+        tests/movegen/attacks_tests.cpp
+        tests/position/position_tests.cpp
+        tests/movegen/move_list_tests.cpp
+        tests/position/zobrist_tests.cpp
+        tests/movegen/movegen_tests.cpp
+        tests/search/transposition_table_tests.cpp
+        tests/engine/game_state_tests.cpp
+        tests/search/search_tests.cpp
+        tests/movegen/move_format_tests.cpp
 )
 
 target_link_libraries(aribella_tests
