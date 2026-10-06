@@ -199,11 +199,11 @@ Aribella also supports UCI commands for:
 
 ## Testing
 
-Aribella uses GoogleTest and CTest for automated testing.
+Aribella uses GoogleTest for automated testing.
 
 The test suite covers:
 
-- Bitboard operations
+Bitboard operations
 - Directional bitboard shifts
 - Attack generation
 - Move-list behavior
@@ -228,10 +228,18 @@ The test suite covers:
 - Engine lifecycle
 - Asynchronous search
 
-Run the test suite with:
+After building the project, run the test executable directly.
+
+### Windows
+
+```powershell
+.\build\aribella_tests.exe
+```
+
+### Linux / macOS
 
 ```bash
-ctest --test-dir build --output-on-failure
+./build/aribella_tests
 ```
 
 ---
