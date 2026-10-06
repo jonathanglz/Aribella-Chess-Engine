@@ -54,7 +54,7 @@ target_link_libraries(aribella_engine
 )
 
 add_executable(Aribella
-        main.cpp
+        src/main.cpp
 )
 
 target_link_libraries(Aribella

@@ -50,7 +50,7 @@ namespace Aribella {
 
         [[nodiscard]]
         constexpr auto end() noexcept {
-            return moves_.end() + size_;
+            return moves_.begin() + size_;
         }
 
         [[nodiscard]]
@@ -60,7 +60,7 @@ namespace Aribella {
 
         [[nodiscard]]
         constexpr auto end() const noexcept {
-            return moves_.end() + size_;
+            return moves_.begin() + size_;
         }
 
         constexpr void clear() noexcept {

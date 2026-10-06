@@ -120,16 +120,14 @@ TEST(MoveListTest, BeginEndIterateValidMoves) {
     std::size_t count = 0;
 
     for (const Move &move: moves) {
-        if (count == 0) {
+        if (count == 0)
             EXPECT_EQ(move, first);
-        } else if (count == 1) {
+        else if (count == 1)
             EXPECT_EQ(move, second);
-        }
-
         ++count;
     }
 
-    EXPECT_EQ(count, 2);
+    EXPECT_EQ(count, 2U);
 }
 
 TEST(MoveListTest, ConstIteration) {

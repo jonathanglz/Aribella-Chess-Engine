@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "src/uci/uci.h"
+#include "uci/uci.h"
 
 using namespace Aribella;
 

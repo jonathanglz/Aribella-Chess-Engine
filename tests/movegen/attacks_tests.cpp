@@ -41,7 +41,7 @@ TEST(AttackTest, PawnAttackAtBoardEdges) {
 
     EXPECT_EQ(pawn_attacks(Color::Black, square_bb(Square::A5)), square_bb(Square::B4));
 
-    EXPECT_EQ(pawn_attacks(Color::Black, square_bb(Square::H5)), square_bb(Square::G5));
+    EXPECT_EQ(pawn_attacks(Color::Black, square_bb(Square::H5)), square_bb(Square::G4));
 }
 
 TEST(AttackTest, KnightAttacksFromCenter) {
