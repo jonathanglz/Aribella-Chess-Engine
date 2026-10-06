@@ -433,8 +433,8 @@ See the [`LICENSE`](LICENSE) file for the full license text.
 ## SOURCES:
 
 - chessprogramming.org
-https://analog-hors.github.io/site/magic-bitboards/
+- https://analog-hors.github.io/site/magic-bitboards/
 - Chess Programming by Code Monkey
-https://en.wikipedia.org/wiki/Xorshift
+- https://en.wikipedia.org/wiki/Xorshift
 - Stockfish https://github.com/official-stockfish/stockfish
 - DogeyStamp https://www.dogeystamp.com/chess0/
