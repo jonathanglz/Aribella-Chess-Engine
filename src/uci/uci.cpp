@@ -249,6 +249,7 @@ namespace Aribella {
 
                         std::uint64_t total_nodes = 0;
 
+                        // Print information for every completed iteration.
                         for (const IterationInfo &iteration: result.iterations) {
                             total_nodes += iteration.stats.nodes;
 
@@ -274,23 +275,25 @@ namespace Aribella {
                             }
 
                             std::cout << '\n';
-
-                            Move best_move = fallback_move;
-
-                            if (result.completed_depth > 0) {
-                                best_move = result.result.best_move;
-                            }
-
-                            std::cout
-                                    << "bestmove "
-                                    << move_to_string(best_move)
-                                    << '\n'
-                                    << std::flush;
                         }
+
+                        // Print exactly one final bestmove.
+                        Move best_move = fallback_move;
+
+                        if (result.completed_depth > 0) {
+                            best_move = result.result.best_move;
+                        }
+
+                        std::cout
+                                << "bestmove "
+                                << move_to_string(best_move)
+                                << '\n'
+                                << std::flush;
                     }
                 );
             } else if (command == "stop") {
                 session.engine.stop();
+                session.engine.wait_for_search();
             } else if (command == "quit") {
                 session.engine.cancel_search();
                 session.engine.wait_for_search();

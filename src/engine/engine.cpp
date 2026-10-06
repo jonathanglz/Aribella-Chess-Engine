@@ -30,7 +30,7 @@ namespace Aribella {
     }
 
     IterativeSearchResult Engine::search(int depth, bool use_move_ordering) {
-        search_control_.stopped.store(false, std::memory_order_relaxed);
+        // search_control_.stopped.store(false, std::memory_order_relaxed);
 
         return iterative_deepening(
             game_,
@@ -42,12 +42,22 @@ namespace Aribella {
     }
 
     void Engine::start_search(int depth, bool use_move_ordering, SearchFinishedCallback on_finished) {
-        const std::uint64_t my_search_id = search_id_.fetch_add(1, std::memory_order_relaxed) + 1;
-
         stop();
         wait_for_search();
 
-        search_thread_ = std::jthread([
+        search_control_.stopped.store(
+            false,
+            std::memory_order_relaxed
+        );
+
+        const std::uint64_t my_search_id =
+                search_id_.fetch_add(
+                    1,
+                    std::memory_order_relaxed
+                ) + 1;
+
+        search_thread_ = std::jthread(
+            [
                 this,
                 depth,
                 use_move_ordering,
@@ -55,11 +65,20 @@ namespace Aribella {
                 on_finished = std::move(on_finished)
             ]() {
                 const IterativeSearchResult result =
-                        search(depth, use_move_ordering);
+                        search(
+                            depth,
+                            use_move_ordering
+                        );
 
-                const bool is_current = search_id_.load(std::memory_order_relaxed) == my_search_id;
+                const bool is_current =
+                        search_id_.load(
+                            std::memory_order_relaxed
+                        ) == my_search_id;
 
-                on_finished(result, is_current);
+                on_finished(
+                    result,
+                    is_current
+                );
             }
         );
     }

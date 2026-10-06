@@ -77,6 +77,7 @@
 
 # CMake
 cmake-build-*/
+build/
 
 # Mongo Explorer plugin
 .idea/**/mongoSettings.xml
@@ -126,6 +127,10 @@ _deps
 # Build directories
 .idea/
 build/
+
+# Test / benchmark output
+Testing/
+perft_baseline.txt
 
 # OS files
 .DS_Store

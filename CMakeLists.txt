@@ -86,9 +86,10 @@ add_executable(aribella_tests
         tests/position/zobrist_tests.cpp
         tests/movegen/movegen_tests.cpp
         tests/search/transposition_table_tests.cpp
-        tests/engine/game_state_tests.cpp
         tests/search/search_tests.cpp
         tests/movegen/move_format_tests.cpp
+        tests/uci/uci_tests.cpp
+        tests/engine/engine_tests.cpp
 )
 
 target_link_libraries(aribella_tests
@@ -100,3 +101,12 @@ target_link_libraries(aribella_tests
 include(GoogleTest)
 
 gtest_discover_tests(aribella_tests)
+
+add_executable(aribella_benchmark
+        benchmarks/perft_benchmarks.cpp
+)
+
+target_link_libraries(aribella_benchmark
+    PRIVATE
+        aribella_engine
+)
